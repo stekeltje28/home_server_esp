@@ -187,36 +187,36 @@ class _LoginPageState extends State<LoginPage> {
         onPressed: () async {
 
 
-          // await _authService.login('thijs.stekeltje@gmail.com', 'Stekeltje 2007');
-          // _navigationService.pushReplacementNamed('/home');
+          await _authService.login('thijs.stekeltje@gmail.com', 'Stekeltje 2007');
+          _navigationService.pushReplacementNamed('/home');
 
 
-
-          if (_loginFormkey.currentState?.validate() ?? false) {
-            _loginFormkey.currentState?.save();
-            print('email: $email \n password: $password');
-
-            if (email != null && password != null) {
-              // Voer de login uit
-              bool result = await _authService.login(email!, password!);
-              if (result) {
-                // Navigatie naar de home-pagina op de hoofdthread
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _navigationService.pushReplacementNamed('/home');
-                });
-              } else {
-                _alertService.showToast(
-                  text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
-                  icon: Icons.error_outline,
-                );
-              }
-            }
-          } else {
-            _alertService.showToast(
-              text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
-              icon: Icons.error_outline,
-            );
-          }
+          //
+          // if (_loginFormkey.currentState?.validate() ?? false) {
+          //   _loginFormkey.currentState?.save();
+          //   print('email: $email \n password: $password');
+          //
+          //   if (email != null && password != null) {
+          //     // Voer de login uit
+          //     bool result = await _authService.login(email!, password!);
+          //     if (result) {
+          //       // Navigatie naar de home-pagina op de hoofdthread
+          //       WidgetsBinding.instance.addPostFrameCallback((_) {
+          //         _navigationService.pushReplacementNamed('/home');
+          //       });
+          //     } else {
+          //       _alertService.showToast(
+          //         text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
+          //         icon: Icons.error_outline,
+          //       );
+          //     }
+          //   }
+          // } else {
+          //   _alertService.showToast(
+          //     text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
+          //     icon: Icons.error_outline,
+          //   );
+          // }
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),

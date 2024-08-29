@@ -48,7 +48,7 @@ class _ContactPageState extends State<ContactPage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const HomePage(initialPageIndex: 1)),
+              MaterialPageRoute(builder: (context) => const HomePage(initialPageIndex: 1,)),
             );
           },
           icon: const Icon(Icons.arrow_back),
@@ -233,7 +233,7 @@ class _ContactPageState extends State<ContactPage> {
                       Expanded(
                         child: Text(
                           user.name ?? '',
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white, fontSize: 15),
                         ),
                       ),
                       IconButton(
@@ -276,6 +276,8 @@ class _ContactPageState extends State<ContactPage> {
     );
   }
 
+
+  //voor gebruikers met expensiontile
   Widget contactTrue(UserProfile user) {
     return SafeArea(
       child: Padding(
@@ -288,7 +290,7 @@ class _ContactPageState extends State<ContactPage> {
                   : MediaQuery.of(context).size.width,
             ),
             child: BlurryContainer(
-              blur: 10,
+
               elevation: 0,
               color: Colors.white.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20.0),
@@ -298,6 +300,7 @@ class _ContactPageState extends State<ContactPage> {
                   ExpansionTile(
                     iconColor: Colors.white,
                     collapsedIconColor: Colors.white,
+
                     title: Row(
                       children: [
                         GestureDetector(
@@ -306,7 +309,7 @@ class _ContactPageState extends State<ContactPage> {
                               context: context,
                               builder: (BuildContext context) {
                                 return Dialog(
-                                  backgroundColor: Colors.transparent, // Maakt de achtergrond van de dialog transparant
+                                  backgroundColor: Colors.transparent,
                                   child: GestureDetector(
                                     onTap: () {
                                       Navigator.of(context).pop(); // Sluit de dialog wanneer je op de afbeelding klikt
@@ -336,16 +339,18 @@ class _ContactPageState extends State<ContactPage> {
                         Expanded(
                           child: Text(
                             user.name ?? '',
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white, fontSize: 15),
                           ),
                         ),
                         IconButton(
+                          iconSize: 21,
                           icon: const Icon(Icons.call, color: Colors.white),
                           onPressed: () {
                             // Voeg hier bel-functionaliteit toe
                           },
                         ),
                         IconButton(
+                          iconSize: 21,
                           icon: const Icon(Icons.chat, color: Colors.white),
                           onPressed: () async {
                             final chatExists = await _databaseService

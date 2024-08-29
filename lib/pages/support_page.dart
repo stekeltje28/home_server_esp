@@ -6,7 +6,6 @@ import 'package:youtube_chat_app/models/user_profile.dart';
 import 'package:youtube_chat_app/pages/home/contact_page.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
 import 'package:youtube_chat_app/services/database_service.dart';
-import 'package:youtube_chat_app/widgets/background_widget.dart';
 
 
 class SupportPage extends StatefulWidget {
@@ -26,54 +25,22 @@ class _SupportPageState extends State<SupportPage> {
     super.initState();
     _alertService = _getIt.get<AlertService>();
     _databaseService = _getIt.get<DatabaseService>();
-    _loadUserProfile();
-  }
-
-  String _fullName = '';
-
-  Future<void> _loadUserProfile() async {
-    try {
-      UserProfile? userProfile = await _databaseService.getUserProfile();
-      if (userProfile != null) {
-        setState(() {
-          _fullName = userProfile.name ?? 'Onbekend';
-        });
-      }
-    } catch (e) {
-      print('Error loading user profile: $e');
-      _alertService.showToast(
-          text: 'Fout bij het ophalen van het profiel.',
-          icon: Icons.error_outline);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundContainer(
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.transparent, // Zorg ervoor dat de achtergrond doorzichtig is
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, // Zorg ervoor dat de tekst links uitgelijnd is
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0), // Voeg padding toe rondom de tekst
-                child: Text(
-                  "$_fullName, wij helpen je!",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
               const SizedBox(height: 16), // Voeg wat ruimte toe onder de tekst
               _buildBlurryContactContainer(), // Voeg de container met medewerkers toe
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildBlurryContactContainer() {
