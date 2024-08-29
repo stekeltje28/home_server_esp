@@ -1,0 +1,48 @@
+name: youtube_chat_app
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  firebase_auth: ^5.1.4
+  firebase_core: ^3.3.0
+  cloud_firestore: ^5.2.1
+  firebase_storage: ^12.1.2
+  dash_chat_2: ^0.0.20
+  firebase_analytics: ^11.2.1
+  google_fonts: ^6.2.1
+  delightful_toast: ^1.1.0
+  get_it: ^7.6.7
+  image_picker: ^1.0.7
+  path: ^1.9.0
+  flutter_icon_snackbar: ^1.1.7
+  logger: ^2.3.0
+  device_info_plus: ^10.1.0
+  connectivity_plus: ^6.0.3
+  blurrycontainer: ^2.1.0
+  shared_preferences: ^2.3.1
+  sidebarx: ^0.17.1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  url_launcher: ^6.3.0
+  expansion_tile_group: ^2.0.0
+  firebase_messaging: ^15.0.4
+  flutter_local_notifications: ^17.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/image/easy_logo.png
