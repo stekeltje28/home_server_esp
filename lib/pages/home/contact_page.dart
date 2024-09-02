@@ -321,7 +321,9 @@ class _ContactPageState extends State<ContactPage> {
                                         shape: BoxShape.rectangle,
                                         image: DecorationImage(
                                           fit: BoxFit.cover,
-                                          image: NetworkImage(user.pfpURL ?? ''),
+                                          image: user.pfpURL!.isNotEmpty
+                                              ? NetworkImage(user.pfpURL!)
+                                              : const AssetImage('assets/image/default.jpg') as ImageProvider,
                                         ),
                                       ),
                                     ),

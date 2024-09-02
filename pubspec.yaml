@@ -35,6 +35,8 @@ dependencies:
   expansion_tile_group: ^2.0.0
   firebase_messaging: ^15.0.4
   flutter_local_notifications: ^17.2.2
+  syncfusion_flutter_charts: ^26.2.11
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:

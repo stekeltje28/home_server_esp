@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
-
-import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,10 +9,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:youtube_chat_app/models/user_profile.dart';
 import 'package:youtube_chat_app/pages/support_page.dart';
+import 'package:youtube_chat_app/services/alert_service.dart';
+import 'package:youtube_chat_app/services/auth_service.dart';
 import 'package:youtube_chat_app/services/database_service.dart';
-import '../services/alert_service.dart';
-import '../services/auth_service.dart';
-import '../services/navigation_service.dart';
+import 'package:youtube_chat_app/services/navigation_service.dart';
 import 'home/contact_page.dart';
 import 'home/setting_page.dart';
 import 'home/welcome_page.dart';
@@ -57,11 +55,31 @@ class _HomePageState extends State<HomePage> {
     _databaseService = _getIt.get<DatabaseService>();
     _controller.addListener(_handleSidebarChange);
     _loadUserProfile();
+    _updateHeadText();
   }
 
   void _handleSidebarChange() {
-    if (_controller.selectedIndex != widget.initialPageIndex) {
-      _loadUserProfile();
+    print('Sidebar Index Changed: ${_controller.selectedIndex}');
+    _updateHeadText();
+  }
+
+  void _updateHeadText() {
+    List<List<String>> texts = [
+      ["Welkom bij de Welkomstpagina!", "Hallo en welkom op onze site!", "Fijn dat je hier bent!"],
+      ["Neem contact met ons op!", "We horen graag van je!", "Stuur ons een bericht!"],
+      ["Dit zijn de instellingen.", "Hier kun je je voorkeuren aanpassen.", "Beheer je accountinstellingen hier."]
+    ];
+
+    if (_controller.selectedIndex < texts.length) {
+      setState(() {
+        _headText = texts[_controller.selectedIndex][Random().nextInt(texts[_controller.selectedIndex].length)];
+        print('Updated Head Text for Index ${_controller.selectedIndex}: $_headText'); // Debugging
+      });
+    } else {
+      setState(() {
+        _headText = "Onbekende pagina.";
+        print('Head Text for Unknown Index: $_headText'); // Debugging
+      });
     }
   }
 
@@ -87,34 +105,6 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _controller.removeListener(_handleSidebarChange);
     super.dispose();
-  }
-
-  void _onSidebarItemTap() {
-    setState(() {
-      List<List<String>> texts = [
-        [
-          "Welkom bij de Welkomstpagina!",
-          "Hallo en welkom op onze site!",
-          "Fijn dat je hier bent!"
-        ],
-        [
-          "Neem contact met ons op!",
-          "We horen graag van je!",
-          "Stuur ons een bericht!"
-        ],
-        [
-          "Dit zijn de instellingen.",
-          "Hier kun je je voorkeuren aanpassen.",
-          "Beheer je accountinstellingen hier."
-        ]
-      ];
-
-      if (_controller.selectedIndex < texts.length) {
-        _headText = texts[_controller.selectedIndex][Random().nextInt(texts[_controller.selectedIndex].length)];
-      } else {
-        _headText = "Onbekende pagina.";
-      }
-    });
   }
 
   @override
@@ -150,7 +140,10 @@ class _HomePageState extends State<HomePage> {
                 ? ExampleSidebarX(
               controller: _controller,
               userProfile: UserProfile(name: _fullName, pfpURL: _pfpURL),
-              onTap: _onSidebarItemTap,
+              onTap: () {
+                _handleSidebarChange();
+                _key.currentState?.openDrawer();
+              },
             )
                 : null,
             body: Row(
@@ -159,7 +152,9 @@ class _HomePageState extends State<HomePage> {
                   ExampleSidebarX(
                     controller: _controller,
                     userProfile: UserProfile(name: _fullName, pfpURL: _pfpURL),
-                    onTap: _onSidebarItemTap,
+                    onTap: () {
+                      _handleSidebarChange();
+                    },
                   ),
                 Expanded(
                   child: Stack(
@@ -502,7 +497,6 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> {
           label: 'Home',
           onTap: () {
             widget.onTap();
-            // Example of safe index update
             widget.controller.selectIndex(0);
           },
         ),
@@ -511,7 +505,6 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> {
           label: 'Support',
           onTap: () {
             widget.onTap();
-            // Example of safe index update
             widget.controller.selectIndex(1);
           },
         ),
@@ -520,7 +513,6 @@ class _ExampleSidebarXState extends State<ExampleSidebarX> {
           label: 'Settings',
           onTap: () {
             widget.onTap();
-            // Example of safe index update
             widget.controller.selectIndex(2);
           },
         ),

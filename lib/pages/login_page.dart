@@ -1,3 +1,5 @@
+import 'dart:async'; // Import for Future
+import 'dart:io'; // Import for InternetAddress
 import 'dart:math';
 import 'dart:ui';
 
@@ -8,8 +10,8 @@ import 'package:youtube_chat_app/consts.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
 import 'package:youtube_chat_app/services/auth_service.dart';
 import 'package:youtube_chat_app/services/navigation_service.dart';
-import 'package:youtube_chat_app/widgets/costum_form_field.dart';
 
+import '../widgets/costum_form_field.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -33,6 +35,15 @@ class _LoginPageState extends State<LoginPage> {
     _authService = _getIt.get<AuthService>();
     _navigationService = _getIt.get<NavigationService>();
     _alertService = _getIt.get<AlertService>();
+  }
+
+  Future<bool> hasInternetConnection() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
   }
 
   @override
@@ -186,37 +197,45 @@ class _LoginPageState extends State<LoginPage> {
       child: ElevatedButton(
         onPressed: () async {
 
-
           await _authService.login('thijs.stekeltje@gmail.com', 'Stekeltje 2007');
           _navigationService.pushReplacementNamed('/home');
 
 
-          //
-          // if (_loginFormkey.currentState?.validate() ?? false) {
-          //   _loginFormkey.currentState?.save();
-          //   print('email: $email \n password: $password');
-          //
-          //   if (email != null && password != null) {
-          //     // Voer de login uit
-          //     bool result = await _authService.login(email!, password!);
-          //     if (result) {
-          //       // Navigatie naar de home-pagina op de hoofdthread
-          //       WidgetsBinding.instance.addPostFrameCallback((_) {
-          //         _navigationService.pushReplacementNamed('/home');
-          //       });
-          //     } else {
-          //       _alertService.showToast(
-          //         text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
-          //         icon: Icons.error_outline,
-          //       );
-          //     }
-          //   }
-          // } else {
-          //   _alertService.showToast(
-          //     text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
-          //     icon: Icons.error_outline,
-          //   );
-          // }
+        //   if (_loginFormkey.currentState?.validate() ?? false) {
+        //     _loginFormkey.currentState?.save();
+        //     print('email: $email \n password: $password');
+        //
+        //     if (email != null && password != null) {
+        //       // Check internet connection
+        //       bool connection = await hasInternetConnection();
+        //       if (!connection) {
+        //         _alertService.showToast(
+        //           text: 'Geen internetverbinding. Probeer het later opnieuw.',
+        //           icon: Icons.error_outline,
+        //         );
+        //         return; // Exit the function if no internet
+        //       }
+        //
+        //       // Attempt to log in
+        //       bool result = await _authService.login(email!, password!);
+        //       if (result) {
+        //         // Navigate to the home page on the main thread
+        //         WidgetsBinding.instance.addPostFrameCallback((_) {
+        //           _navigationService.pushReplacementNamed('/home');
+        //         });
+        //       } else {
+        //         _alertService.showToast(
+        //           text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
+        //           icon: Icons.error_outline,
+        //         );
+        //       }
+        //     }
+        //   } else {
+        //     _alertService.showToast(
+        //       text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
+        //       icon: Icons.error_outline,
+        //     );
+        //   }
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -232,7 +251,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
 
   Widget _createAnAccountLink() {
     return Row(

@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:youtube_chat_app/models/user_profile.dart';
 import 'package:youtube_chat_app/pages/home/contact_page.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
+import 'package:youtube_chat_app/services/connectivity_service.dart';
 import 'package:youtube_chat_app/services/database_service.dart';
 
 
@@ -19,6 +20,7 @@ class _SupportPageState extends State<SupportPage> {
   final GetIt _getIt = GetIt.instance;
   late AlertService _alertService;
   late DatabaseService _databaseService;
+  late  Future<bool> connection = hasInternetConnection();
 
   @override
   void initState() {
@@ -153,7 +155,10 @@ class _SupportPageState extends State<SupportPage> {
                                   shape: BoxShape.rectangle,
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: NetworkImage(user.pfpURL ?? ''),
+                                    image: user.pfpURL!.isNotEmpty
+                                        ? NetworkImage(user.pfpURL!)
+                                        : const AssetImage('assets/image/default.jpg') as ImageProvider,
+
                                   ),
                                 ),
                               ),
@@ -163,7 +168,9 @@ class _SupportPageState extends State<SupportPage> {
                       );
                     },
                     child: CircleAvatar(
-                      backgroundImage: NetworkImage(user.pfpURL ?? ''),
+                      backgroundImage: user.pfpURL!.isNotEmpty
+                          ? NetworkImage(user.pfpURL!)
+                          : const AssetImage('assets/image/default.jpg') as ImageProvider,
                       radius: 30,
                     ),
                   ),
