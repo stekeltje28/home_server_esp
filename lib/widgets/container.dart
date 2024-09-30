@@ -20,17 +20,16 @@ class CustomContainer extends StatelessWidget {
     this.width = double.infinity,
     this.blur = 10.0,
     this.elevation = 0,
-    this.color = Colors.white30,
+    this.color = const Color(0x1A000000),
     BorderRadius? borderRadius,
     this.padding = const EdgeInsets.all(20),
-  }) : this.borderRadius = borderRadius ?? BorderRadius.circular(20.0);
+  }) : borderRadius = borderRadius ?? BorderRadius.circular(20.0);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 12, right: 12),
       child: BlurryContainer(
-        child: child,
         blur: blur,
         height: height,
         width: width,
@@ -38,6 +37,7 @@ class CustomContainer extends StatelessWidget {
         color: color,
         borderRadius: borderRadius,
         padding: padding,
+        child: child,
       ),
     );
   }

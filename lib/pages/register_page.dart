@@ -118,9 +118,6 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _headerText(context),
-                  _registerForm(),
-                  _loginAnAccountLink(),
                 ],
               ),
             ),
@@ -247,51 +244,8 @@ class _RegisterPageState extends State<RegisterPage> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () async {
-          setState(() {
-            isLoading = true;
-          });
-          try {
-            if ((_registerFormKey.currentState?.validate() ?? false) && selectedImage != null) {
-              _registerFormKey.currentState?.save();
-              bool result = await _authService.signup(email!, password!);
-              if (result) {
-                String? pfpURL = await _storageService.upLoadUserPip(
-                    file: selectedImage!,
-                    uid: _authService.user!.uid
-                );
-                if (pfpURL != null) {
-                  await _databaseService.createUserProfile(userProfile: UserProfile(
-                      uid: _authService.user!.uid,
-                      name: name!,
-                      pfpURL: pfpURL,
-                      email: email!,
-                      access: false),
-                  );
-                  _alertService.showToast(text: 'Je hebt succesvol een account aangemaakt 💪', icon: Icons.check);
-                }
-                bool login = await _authService.login(email!, password!);
-                if (login) {
-                  _alertService.showToast(text: 'Succesvol ingelogd 💪', icon: Icons.check);
-                  _navigationService.pushReplacementNamed('/home');
-                } else {
-                  _alertService.showToast(text: 'Er is iets mis gegaan, probeer hier in te loggen', icon: Icons.error_outline);
-                  _navigationService.pushNamed('/login');
-                }
-              }
-            } else if (selectedImage == null) {
-              _alertService.showToast(text: 'Heb je al een afbeelding gekozen?', icon: Icons.error_outline);
-            } else {
-              _alertService.showToast(text: 'Vul alle tekstvelden correct in', icon: Icons.error_outline);
-            }
-          } catch (e) {
-            print('Niet gelukt');
-            _alertService.showToast(text: 'registratie is gefaald!', icon: Icons.error_outline);
-          }
-          setState(() {
-            isLoading = false;
-          });
-        },
+
+
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),
           backgroundColor: Colors.blueAccent,
@@ -299,12 +253,20 @@ class _RegisterPageState extends State<RegisterPage> {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
+        onPressed: () {_navigationService.pushNamed('/complete');},
         child: isLoading
             ? const CircularProgressIndicator()
-            : const Text(
-          "Aanmelden",
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
+            : Row(
+            mainAxisAlignment:  MainAxisAlignment.center,
+              children: [
+                const Text(
+                          "verder gaan",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                const SizedBox(width: 10,),
+                const Icon(Icons.arrow_forward, color: Colors.white,)
+              ],
+            ),
       ),
     );
   }

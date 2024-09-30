@@ -29,6 +29,8 @@ class _SupportPageState extends State<SupportPage> {
     _databaseService = _getIt.get<DatabaseService>();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,7 +39,6 @@ class _SupportPageState extends State<SupportPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, // Zorg ervoor dat de tekst links uitgelijnd is
             children: [
-              const SizedBox(height: 16), // Voeg wat ruimte toe onder de tekst
               _buildBlurryContactContainer(), // Voeg de container met medewerkers toe
             ],
           ),
@@ -53,7 +54,7 @@ class _SupportPageState extends State<SupportPage> {
         width: double.infinity,
         height: 150,
         elevation: 0,
-        color: Colors.white.withOpacity(0.3), // Lichtere kleur met hogere opaciteit
+        color: const Color(0x2F000000), // Lichtere kleur met hogere opaciteit
         borderRadius: BorderRadius.circular(20.0),
         padding: const EdgeInsets.all(0), // Verwijder padding zodat de bovenkant volledig wordt bedekt
         child: Column(
@@ -94,7 +95,6 @@ class _SupportPageState extends State<SupportPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 10), // Ruimte tussen de titel en de afbeeldingen
             Expanded(child: _buildEmployeeRow()), // Rest van de container wordt gevuld met inhoud
           ],
         ),

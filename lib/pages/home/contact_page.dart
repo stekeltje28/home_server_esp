@@ -1,9 +1,9 @@
 import 'dart:ui';
-
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_chat_app/models/user_profile.dart';
 import 'package:youtube_chat_app/pages/chat_page.dart';
 import 'package:youtube_chat_app/pages/home_page.dart';
@@ -36,65 +36,39 @@ class _ContactPageState extends State<ContactPage> {
     _databaseService = _getIt.get<DatabaseService>();
   }
 
+  void _belNummer(String nummer) async {
+    final Uri url = Uri(scheme: 'tel', path: nummer);
+    if (await canLaunch(url.toString())) {
+      await launch(url.toString());
+    } else {
+      throw 'Kon de telefoonapp niet openen';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      backgroundColor: const Color(0xFF000916), // Set background to black
+      backgroundColor: const Color(0xFFFFFFFF),
       appBar: AppBar(
         backgroundColor: const Color(0x00000000),
         leading: IconButton(
-          color: Colors.white,
+          color: Colors.black,
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const HomePage(initialPageIndex: 1,)),
+              MaterialPageRoute(builder: (context) => const HomePage(initialPageIndex: 1)),
             );
           },
           icon: const Icon(Icons.arrow_back),
           iconSize: 32.0,
         ),
       ),
-      body:LayoutBuilder(
+      body: LayoutBuilder(
         builder: (context, constraints) {
-          return SizedBox.expand(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Grootste bal links onder
-                const Positioned(
-                  bottom: 10,
-                  left: 10,
-                  child: GradientBall(
-                    colors: [Colors.black45, Colors.green],
-                    size: Size.square(150),
-                  ),
-                ),
-                // Middelste bal rechts boven
-                const Positioned(
-                  top: 100,
-                  right: 10,
-                  child: GradientBall(
-                    size: Size.square(120),
-                    colors: [Colors.purple, Colors.blue],
-                  ),
-                ),
-                // Kleinste bal links boven
-                const Positioned(
-                  top: 50,
-                  left: 20,
-                  child: GradientBall(
-                    size: Size.square(80),
-                    colors: [Colors.orange, Colors.yellowAccent],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child:  SingleChildScrollView(
-                    child: _buildUI()
-                  ),
-                ),
-              ],
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: _buildUI(),
             ),
           );
         },
@@ -105,20 +79,16 @@ class _ContactPageState extends State<ContactPage> {
   Widget _buildUI() {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              _chatList(),
-            ],
-          ),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _chatList(),
+          ],
         ),
       ),
     );
   }
-
 
   Widget _chatList() {
     return StreamBuilder<QuerySnapshot<UserProfile>>(
@@ -128,7 +98,7 @@ class _ContactPageState extends State<ContactPage> {
           return const Center(
             child: Text(
               "Niet mogelijk data te laden",
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.black),
             ),
           );
         }
@@ -140,40 +110,33 @@ class _ContactPageState extends State<ContactPage> {
             return const Center(
               child: Text(
                 "Geen contacten beschikbaar",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
               ),
             );
           }
 
-          // Scheid de gebruikers in twee groepen op basis van hun access status
-          final usersWithAccess = users.where((doc) =>
-          doc.data().access == true).map((doc) => doc.data()).toList();
-          final usersWithoutAccess = users.where((doc) =>
-          doc.data().access == false).map((doc) => doc.data()).toList();
+          final usersWithAccess = users.where((doc) => doc.data().access == true).map((doc) => doc.data()).toList();
+          final usersWithoutAccess = users.where((doc) => doc.data().access == false).map((doc) => doc.data()).toList();
 
-          final filteredUsers = currentUserAccess
-              ? usersWithAccess + usersWithoutAccess
-              : usersWithAccess;
+          final filteredUsers = currentUserAccess ? usersWithAccess + usersWithoutAccess : usersWithAccess;
 
           if (filteredUsers.isEmpty) {
             return const Center(
               child: Text(
                 "Geen contacten beschikbaar",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.black),
               ),
             );
           }
 
           return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (currentUserAccess) ...[
                 _sectionTitle("Contacten met toegang"),
                 ...usersWithAccess.map((user) => contactTrue(user)),
                 _sectionTitle("Contacten zonder toegang"),
-                ...usersWithoutAccess.map((user) => contactFalse(user))
-                    ,
+                ...usersWithoutAccess.map((user) => contactFalse(user)),
               ] else
                 ...[
                   _sectionTitle("Medewerkers"),
@@ -195,7 +158,7 @@ class _ContactPageState extends State<ContactPage> {
       child: Text(
         title,
         style: const TextStyle(
-          color: Colors.white,
+          color: Colors.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
@@ -210,15 +173,13 @@ class _ContactPageState extends State<ContactPage> {
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width > 600
-                  ? 1000
-                  : MediaQuery.of(context).size.width,
+              maxWidth: MediaQuery.of(context).size.width > 600 ? 1000 : MediaQuery.of(context).size.width,
             ),
             child: BlurryContainer(
               blur: 10,
               width: double.infinity,
               elevation: 0,
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20.0),
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -233,20 +194,19 @@ class _ContactPageState extends State<ContactPage> {
                       Expanded(
                         child: Text(
                           user.name ?? '',
-                          style: const TextStyle(color: Colors.white, fontSize: 15),
+                          style: TextStyle(color: Colors.black, fontSize: 15 * MediaQuery.of(context).textScaleFactor),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.call, color: Colors.white),
+                        icon: const Icon(Icons.call, color: Colors.black),
                         onPressed: () {
-                          // Voeg hier bel-functionaliteit toe
+                          _belNummer('123456789');
                         },
                       ),
                       IconButton(
-                        icon: const Icon(Icons.chat, color: Colors.white),
+                        icon: const Icon(Icons.chat, color: Colors.black),
                         onPressed: () async {
-                          final chatExists = await _databaseService
-                              .checkChatExist(
+                          final chatExists = await _databaseService.checkChatExist(
                             _authService.user!.uid,
                             user.uid!,
                           );
@@ -276,8 +236,6 @@ class _ContactPageState extends State<ContactPage> {
     );
   }
 
-
-  //voor gebruikers met expensiontile
   Widget contactTrue(UserProfile user) {
     return SafeArea(
       child: Padding(
@@ -285,22 +243,18 @@ class _ContactPageState extends State<ContactPage> {
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width > 600
-                  ? 1000
-                  : MediaQuery.of(context).size.width,
+              maxWidth: MediaQuery.of(context).size.width > 600 ? 1000 : MediaQuery.of(context).size.width,
             ),
             child: BlurryContainer(
-
               elevation: 0,
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20.0),
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   ExpansionTile(
-                    iconColor: Colors.white,
-                    collapsedIconColor: Colors.white,
-
+                    iconColor: Colors.black,
+                    collapsedIconColor: Colors.black,
                     title: Row(
                       children: [
                         GestureDetector(
@@ -312,11 +266,11 @@ class _ContactPageState extends State<ContactPage> {
                                   backgroundColor: Colors.transparent,
                                   child: GestureDetector(
                                     onTap: () {
-                                      Navigator.of(context).pop(); // Sluit de dialog wanneer je op de afbeelding klikt
+                                      Navigator.of(context).pop();
                                     },
                                     child: Container(
-                                      width: MediaQuery.of(context).size.width * 0.8, // 80% van de schermbreedte
-                                      height: MediaQuery.of(context).size.width * 0.8, // 80% van de schermbreedte
+                                      width: MediaQuery.of(context).size.width * 0.8,
+                                      height: MediaQuery.of(context).size.width * 0.8,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.rectangle,
                                         image: DecorationImage(
@@ -334,29 +288,29 @@ class _ContactPageState extends State<ContactPage> {
                           },
                           child: CircleAvatar(
                             backgroundImage: NetworkImage(user.pfpURL ?? ''),
-                            radius: 30,
+                            radius: 24, // Verklein de straal van de afbeelding
                           ),
                         ),
                         const SizedBox(width: 20),
                         Expanded(
                           child: Text(
                             user.name ?? '',
-                            style: const TextStyle(color: Colors.white, fontSize: 15),
+                            style: TextStyle(color: Colors.black, fontSize: 15 * MediaQuery.of(context).textScaleFactor),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         IconButton(
                           iconSize: 21,
-                          icon: const Icon(Icons.call, color: Colors.white),
+                          icon: const Icon(Icons.call, color: Colors.black),
                           onPressed: () {
-                            // Voeg hier bel-functionaliteit toe
+                            _belNummer('123456789');
                           },
                         ),
                         IconButton(
                           iconSize: 21,
-                          icon: const Icon(Icons.chat, color: Colors.white),
+                          icon: const Icon(Icons.chat, color: Colors.black),
                           onPressed: () async {
-                            final chatExists = await _databaseService
-                                .checkChatExist(
+                            final chatExists = await _databaseService.checkChatExist(
                               _authService.user!.uid,
                               user.uid!,
                             );
@@ -377,7 +331,7 @@ class _ContactPageState extends State<ContactPage> {
                         ),
                       ],
                     ),
-                    backgroundColor: Colors.white.withOpacity(0.0),
+                    backgroundColor: Colors.black.withOpacity(0.0),
                     children: user.access == true ? [_availabilityList()] : [],
                   ),
                 ],
@@ -388,6 +342,7 @@ class _ContactPageState extends State<ContactPage> {
       ),
     );
   }
+
 
   Widget _availabilityList() {
     final availability = [
@@ -408,9 +363,7 @@ class _ContactPageState extends State<ContactPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
             child: Text(day,
-                style: TextStyle(color: Colors.white, fontSize: 16 * MediaQuery
-                    .of(context)
-                    .textScaleFactor,)),
+                style: TextStyle(color: Colors.black, fontSize: 16 * MediaQuery.of(context).textScaleFactor)),
           )).toList(),
     );
   }
@@ -419,6 +372,7 @@ class _ContactPageState extends State<ContactPage> {
 class GradientBall extends StatelessWidget {
   final List<Color> colors;
   final Size size;
+
   const GradientBall({
     super.key,
     required this.colors,
@@ -444,6 +398,3 @@ class GradientBall extends StatelessWidget {
     );
   }
 }
-
-
-

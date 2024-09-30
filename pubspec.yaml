@@ -35,8 +35,16 @@ dependencies:
   expansion_tile_group: ^2.0.0
   firebase_messaging: ^15.0.4
   flutter_local_notifications: ^17.2.2
-  syncfusion_flutter_charts: ^26.2.11
+  syncfusion_flutter_charts: ^26.2.12
   fl_chart: ^0.69.0
+  awesome_bottom_bar: any
+  video_player: ^2.9.1
+  file_picker: ^8.1.2
+  http: ^1.2.2
+  http_parser: ^4.0.2
+
+
+
 
 dev_dependencies:
   flutter_test:
@@ -49,3 +57,4 @@ flutter:
   assets:
     - assets/image/easy_logo.png
     - assets/image/default.jpg
+    - assets/image/Schermafbeelding 2024-07-31 104216.png

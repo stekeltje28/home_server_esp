@@ -39,6 +39,7 @@ class DatabaseService {
       try {
         await _userCollection?.doc(userId).update({'pfpURL': url});
       } catch (e) {
+        print('Failed to update profile picture: $e');
         throw Exception('Failed to update profile picture: $e');
       }
     } else {
@@ -55,6 +56,7 @@ class DatabaseService {
     try {
       await _userCollection?.doc(userProfile.uid).set(userProfile);
     } catch (e) {
+      print('Failed to create user profile: $e');
       throw Exception('Failed to create user profile: $e');
     }
   }
@@ -72,6 +74,7 @@ class DatabaseService {
       final result = await _chatsCollection?.doc(chatID).get();
       return result?.exists ?? false;
     } catch (e) {
+      print('Failed to check chat existence: $e');
       throw Exception('Failed to check chat existence: $e');
     }
   }
@@ -86,6 +89,7 @@ class DatabaseService {
     try {
       await _chatsCollection?.doc(chatID).set(chat);
     } catch (e) {
+      print('Failed to create new chat: $e');
       throw Exception('Failed to create new chat: $e');
     }
   }
@@ -97,6 +101,7 @@ class DatabaseService {
         "messages": FieldValue.arrayUnion([message.toJson()]),
       });
     } catch (e) {
+      print('Failed to send chat message: $e');
       throw Exception('Failed to send chat message: $e');
     }
   }
@@ -115,6 +120,7 @@ class DatabaseService {
       final docSnapshot = await _userCollection?.doc(uid).get();
       return docSnapshot?.data();
     } catch (e) {
+      print('Failed to get user profile: $e');
       throw Exception('Failed to get user profile: $e');
     }
   }

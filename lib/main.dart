@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:youtube_chat_app/firebase_options.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
 import 'package:youtube_chat_app/services/auth_service.dart';
-import 'package:youtube_chat_app/services/connectivity_service.dart';
 import 'package:youtube_chat_app/services/local_storage.dart';
 import 'package:youtube_chat_app/services/media_service.dart';
 import 'package:youtube_chat_app/services/message_service.dart';
