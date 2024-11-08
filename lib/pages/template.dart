@@ -84,18 +84,6 @@ class _TemplateState extends State<Template> {
     return MaterialApp(
       title: 'Home',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: primaryColor,
-        canvasColor: canvasColor,
-        scaffoldBackgroundColor: scaffoldBackgroundColor,
-        textTheme: const TextTheme(
-          headlineSmall: TextStyle(
-            color: Colors.white,
-            fontSize: 46,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
       home: Scaffold(
         body: Stack(
           children: [
@@ -239,6 +227,3 @@ class _TemplateState extends State<Template> {
   }
 }
 
-const primaryColor = Color(0xFF000000);
-const canvasColor = Color(0xFF000000);
-const scaffoldBackgroundColor = Color(0xFFFFFFFF);

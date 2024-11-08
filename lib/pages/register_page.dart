@@ -5,7 +5,6 @@ import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:youtube_chat_app/consts.dart';
-import 'package:youtube_chat_app/models/user_profile.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
 import 'package:youtube_chat_app/services/auth_service.dart';
 import 'package:youtube_chat_app/services/media_service.dart';
@@ -35,7 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
   late StorageService _storageService;
   late DatabaseService _databaseService;
 
-  String? email, password, name; // 'name' for both first and last names
+  String? email, password, name;
   File? selectedImage;
   bool isLoading = false;
 
@@ -118,6 +117,9 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  _headerText(context),
+                  _registerForm(),
+                  _loginAnAccountLink(),
                 ],
               ),
             ),
@@ -244,8 +246,6 @@ class _RegisterPageState extends State<RegisterPage> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-
-
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),
           backgroundColor: Colors.blueAccent,
@@ -253,20 +253,87 @@ class _RegisterPageState extends State<RegisterPage> {
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-        onPressed: () {_navigationService.pushNamed('/complete');},
+        onPressed: () async {
+          setState(() {
+            isLoading = true;
+          });
+          // try {
+            // if ((_registerFormKey.currentState?.validate() ?? false) && selectedImage != null) {
+            //   _registerFormKey.currentState?.save();
+            //   bool result = await _authService.signup(email!, password!);
+            //   if (result) {
+            //     String? pfpURL = await _storageService.upLoadUserPip(
+            //         file: selectedImage!,
+            //         uid: _authService.user!.uid
+            //     );
+            //     if (pfpURL != null) {
+            //       await _databaseService.createUserProfile(userProfile: UserProfile(
+            //           uid: _authService.user!.uid,
+            //           name: name!,
+            //           pfpURL: pfpURL,
+            //           email: email!,
+            //           access: false),
+            //       );
+            //       _alertService.showToast(text: 'Je hebt succesvol een account aangemaakt 💪', icon: Icons.check);
+            //     }
+            //     bool login = await _authService.login(email!, password!);
+            //     if (login) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Welkom!"),
+                content: const Text(
+                    "Hoe kunnen we u van dienst zijn? \n uw account is gemaakt, Vul uw websitewensen in of krijg een rondleiding in onze app."
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text("Wensen invullen"),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/complete');
+                    },
+                  ),
+                  TextButton(
+                    child: const Text("Rondkijken"),
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/home');
+                    },
+                  ),
+                  TextButton(
+                    child: const Text("Annuleren"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+
+          // } else {
+                //   _alertService.showToast(text: 'Er is iets mis gegaan, probeer hier in te loggen', icon: Icons.error_outline);
+                //   _navigationService.pushNamed('/login');
+                // }
+
+            // } else if (selectedImage == null) {
+            //   _alertService.showToast(text: 'Heb je al een afbeelding gekozen?', icon: Icons.error_outline);
+            // } else {
+            //   _alertService.showToast(text: 'Vul alle tekstvelden correct in', icon: Icons.error_outline);
+            // }
+          // } catch (e) {
+          //   print('Niet gelukt');
+          //   _alertService.showToast(text: 'registratie is gefaald!', icon: Icons.error_outline);
+          // }
+          // setState(() {
+          //   isLoading = false;
+          // });
+        },
         child: isLoading
             ? const CircularProgressIndicator()
-            : Row(
-            mainAxisAlignment:  MainAxisAlignment.center,
-              children: [
-                const Text(
-                          "verder gaan",
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                const SizedBox(width: 10,),
-                const Icon(Icons.arrow_forward, color: Colors.white,)
-              ],
-            ),
+            : const Text(
+          "Aanmelden",
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
       ),
     );
   }

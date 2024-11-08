@@ -1,0 +1,6 @@
+
+voor het typen van de bovenste home text:
+    typewritertext: ^3.0.9
+
+smooth_sheets: ^0.10.2:
+    voor het eventueel registreren

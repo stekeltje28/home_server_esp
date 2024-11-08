@@ -1,11 +1,11 @@
-import 'dart:convert';
-import 'dart:io'; // Voor File-class
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart'; // Voeg de image_picker package toe
+import 'package:image_picker/image_picker.dart';
 import 'package:get_it/get_it.dart';
 import 'package:youtube_chat_app/models/user_profile.dart';
+import 'package:youtube_chat_app/pages/content_toevoegen/confirm_page.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
 import 'package:youtube_chat_app/services/auth_service.dart';
 import 'package:youtube_chat_app/services/database_service.dart';
@@ -28,8 +28,8 @@ class _AddNieuwsState extends State<AddNieuws> {
   final _contentController = TextEditingController();
 
   String _fullName = '';
-  File? _selectedImage; // File voor de geselecteerde afbeelding
-  final ImagePicker _picker = ImagePicker(); // ImagePicker-instantie
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -42,31 +42,45 @@ class _AddNieuwsState extends State<AddNieuws> {
   }
 
   Future<void> addContent(String title, String content, File? file, String url) async {
-    if (file == null) return;
+    if (file == null) {
+      _alertService.showToast(
+        text: 'Selecteer een afbeelding',
+        icon: Icons.error_outline,
+      );
+      return;
+    }
 
     var request = http.MultipartRequest(
       'POST',
-      Uri.parse('http://localhost:8000/api/$url/'),
+      Uri.parse('http://localhost:8000/api/$url/'), // Verander 'localhost' indien nodig
     );
 
+    var token = await _authService.getToken(); // Verkrijg token indien nodig
+    request.headers['Authorization'] = 'Bearer $token'; // Voeg token toe aan headers
     request.headers['Content-Type'] = 'application/json; charset=UTF-8';
     request.fields['title'] = title;
     request.fields['content'] = content;
 
-
-    // Voeg de afbeelding toe aan de aanvraag
+    // Voeg afbeelding toe aan request
     request.files.add(await http.MultipartFile.fromPath('file', file.path));
 
     try {
       final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
       if (response.statusCode == 201) {
-        print('Content added successfully!');
         _alertService.showToast(
           text: 'Inhoud succesvol gepubliceerd!',
           icon: Icons.check_circle,
         );
+
+        await Future.delayed(const Duration(seconds: 1));
+
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const ConfirmPage())
+        );
       } else {
-        print('Failed to add content: ${response.statusCode}');
+        print('Failed to add content: ${response.statusCode} - $responseBody');
         _alertService.showToast(
           text: 'Publiceren mislukt: ${response.statusCode}',
           icon: Icons.error_outline,
@@ -101,11 +115,9 @@ class _AddNieuwsState extends State<AddNieuws> {
   Future<void> _selectImage() async {
     try {
       final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
       if (pickedFile != null) {
         setState(() {
-          _selectedImage = File(pickedFile.path); // Sla het pad van de geselecteerde afbeelding op
-          print(_selectedImage);
+          _selectedImage = File(pickedFile.path);
         });
       } else {
         _alertService.showToast(text: 'Error selecting image', icon: Icons.error_outline);
@@ -127,18 +139,7 @@ class _AddNieuwsState extends State<AddNieuws> {
     return MaterialApp(
       title: 'Home',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: primaryColor,
-        canvasColor: canvasColor,
-        scaffoldBackgroundColor: scaffoldBackgroundColor,
-        textTheme: const TextTheme(
-          headlineSmall: TextStyle(
-            color: Colors.white,
-            fontSize: 46,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
+
       home: Scaffold(
         body: Stack(
           children: [
@@ -231,6 +232,7 @@ class _AddNieuwsState extends State<AddNieuws> {
                               border: OutlineInputBorder(),
                               labelText: 'Title',
                             ),
+                            maxLength: 60,
                           ),
                           const SizedBox(height: 20),
                           TextField(
@@ -263,7 +265,7 @@ class _AddNieuwsState extends State<AddNieuws> {
                           _titleController.text,
                           _contentController.text,
                           _selectedImage,
-                          'images', // vervang dit door de juiste URL
+                          'images', // Zorg ervoor dat 'images' het juiste pad is
                         );
                       },
                       child: const Text(
@@ -282,6 +284,3 @@ class _AddNieuwsState extends State<AddNieuws> {
   }
 }
 
-const primaryColor = Color(0xFF000000);
-const canvasColor = Color(0xFF000000);
-const scaffoldBackgroundColor = Color(0xFFFFFFFF);

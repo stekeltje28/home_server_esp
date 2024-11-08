@@ -40,6 +40,7 @@ class _ChatPageState extends State<ChatPage> {
 
   ChatUser? currentUser, otherUser;
 
+
   @override
   void initState() {
     super.initState();
@@ -49,7 +50,6 @@ class _ChatPageState extends State<ChatPage> {
     _mediaService = _getIt.get<MediaService>();
     _storageService = _getIt.get<StorageService>();
 
-    // Laad de _showtime waarde van local storage
     _loadShowtime();
 
     currentUser = ChatUser(
@@ -63,6 +63,7 @@ class _ChatPageState extends State<ChatPage> {
       profileImage: widget.chatUser.pfpURL,
     );
   }
+
 
   void _loadShowtime() async {
     // Verkrijg de opgeslagen showtime waarde van LocalStorage

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_chat_app/pages/content_toevoegen/muziek.dart';
-import 'package:youtube_chat_app/pages/template.dart';
 // Voeg hier extra pagina's toe die je wilt gebruiken voor navigatie
 
 class ViewContent extends StatefulWidget {

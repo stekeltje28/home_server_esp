@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
-import 'dart:io'; // Voor File-class
-import 'dart:math';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -71,10 +69,48 @@ class _addMuziekState extends State<Muziektoevoegen> {
           print('Geselecteerde audio: ${_selectedAudio!.path}');
         });
       } else {
-        _alertService.showToast(text: 'Error selecting audio', icon: Icons.error_outline);
+        _alertService.showToast(text: 'Fout bij het selecteren van audio', icon: Icons.error_outline);
       }
     } catch (e) {
       print('Error selecting audio: $e');
+    }
+  }
+
+  Future<void> addContent(String title, File? file) async {
+    if (file == null) return;
+
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://localhost:8000/api/muziekcontent/'), // Zorg ervoor dat deze URL klopt
+    );
+
+    request.fields['title'] = title;
+    request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+    try {
+      final response = await request.send();
+      if (response.statusCode == 201) {
+        print('Content added successfully!');
+        _alertService.showToast(
+          text: 'Inhoud succesvol gepubliceerd!',
+          icon: Icons.check_circle,
+        );
+
+        // Terug naar de vorige pagina of een andere actie
+        Navigator.pop(context);
+      } else {
+        print('Failed to add content: ${response.statusCode}');
+        _alertService.showToast(
+          text: 'Publiceren mislukt: ${response.statusCode}',
+          icon: Icons.error_outline,
+        );
+      }
+    } catch (e) {
+      print('Error adding content: $e');
+      _alertService.showToast(
+        text: 'Fout bij het publiceren.',
+        icon: Icons.error_outline,
+      );
     }
   }
 
@@ -115,11 +151,7 @@ class _addMuziekState extends State<Muziektoevoegen> {
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
-                            fontSize: min(
-                              MediaQuery.of(context).size.width * 0.03 +
-                                  MediaQuery.of(context).size.height * 0.01,
-                              35,
-                            ),
+                            fontSize: 25,
                           ),
                         ),
                       ],
@@ -132,22 +164,13 @@ class _addMuziekState extends State<Muziektoevoegen> {
                           _fullName,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.black,
-                            fontSize: min(
-                              MediaQuery.of(context).size.width * 0.03 +
-                                  MediaQuery.of(context).size.height * 0.01,
-                              25,
-                            ),
+                            fontSize: 20,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 5),
-                    const Divider(
-                      thickness: 0.2,
-                      color: Colors.black,
-                      indent: 10,
-                      endIndent: 10,
-                    ),
+                    const Divider(thickness: 0.2, color: Colors.black, indent: 10, endIndent: 10),
                   ],
                 ),
               ),
@@ -160,7 +183,7 @@ class _addMuziekState extends State<Muziektoevoegen> {
                         GestureDetector(
                           onTap: _selectMuziek,
                           child: Container(
-                            width: MediaQuery.sizeOf(context).width * 0.8,
+                            width: MediaQuery.of(context).size.width * 0.8,
                             height: 100,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
@@ -201,10 +224,13 @@ class _addMuziekState extends State<Muziektoevoegen> {
                     ),
                     onPressed: () {
                       // Actie bij drukken op de knop
-                      print('Publiceren knop ingedrukt');
-                      print('Titel: ${_titleController.text}');
-                      if (_selectedAudio != null) {
-                        print('Audio pad: ${_selectedAudio!.path}');
+                      if (_titleController.text.isNotEmpty) {
+                        addContent(_titleController.text, _selectedAudio);
+                      } else {
+                        _alertService.showToast(
+                          text: 'Voer een titel in.',
+                          icon: Icons.error_outline,
+                        );
                       }
                     },
                     child: const Text(
@@ -222,9 +248,7 @@ class _addMuziekState extends State<Muziektoevoegen> {
   }
 }
 
-const primaryColor = Color(0xFF000000);
-const canvasColor = Color(0xFF000000);
-const scaffoldBackgroundColor = Color(0xFFFFFFFF);
+
 
 class Muziekinzien extends StatefulWidget {
   const Muziekinzien({super.key});

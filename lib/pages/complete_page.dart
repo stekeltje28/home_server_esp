@@ -1,16 +1,51 @@
+import 'dart:math';
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
-
+import 'package:get_it/get_it.dart';
+import 'package:youtube_chat_app/services/alert_service.dart';
+import 'package:youtube_chat_app/services/auth_service.dart';
+import 'package:youtube_chat_app/services/database_service.dart';
+import 'package:youtube_chat_app/services/media_service.dart';
+import 'package:youtube_chat_app/services/storage_service.dart';
+import 'package:youtube_chat_app/widgets/costum_form_field.dart';
 import '../services/navigation_service.dart';
 
 class CompletePage extends StatefulWidget {
-  const CompletePage({super.key});
+  const CompletePage({super.key, selectedImage});
 
   @override
   State<CompletePage> createState() => _CompletePageState();
 }
 
 class _CompletePageState extends State<CompletePage> {
+  var selectedImage;
+  final GetIt _getIt = GetIt.instance;
+  final GlobalKey<FormState> _registerFormKey = GlobalKey();
+  late AuthService _authService;
+  late MediaService _mediaService;
+  late NavigationService _navigationService;
+  late AlertService _alertService;
+  late StorageService _storageService;
+  late DatabaseService _databaseService;
+  bool isLoading = false;
+
+  // Nieuwe variabelen voor het opslaan van klantdata
+  String? apiUrl;
+  String? apiPages;
+  String? dataToReceive;
+  String? dataToPlace;
+
+  @override
+  void initState() {
+    super.initState();
+    _mediaService = _getIt.get<MediaService>();
+    _navigationService = _getIt.get<NavigationService>();
+    _authService = _getIt.get<AuthService>();
+    _alertService = _getIt.get<AlertService>();
+    _storageService = _getIt.get<StorageService>();
+    _databaseService = _getIt.get<DatabaseService>();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,6 +112,8 @@ class _CompletePageState extends State<CompletePage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  _headerText(context),
+                  _completeForm()
                 ],
               ),
             ),
@@ -85,51 +122,214 @@ class _CompletePageState extends State<CompletePage> {
       ),
     );
   }
-}
 
-//
-// onPressed: () async {
-// setState(() {
-// isLoading = true;
-// });
-// try {
-// if ((_registerFormKey.currentState?.validate() ?? false) && selectedImage != null) {
-// _registerFormKey.currentState?.save();
-// bool result = await _authService.signup(email!, password!);
-// if (result) {
-// String? pfpURL = await _storageService.upLoadUserPip(
-// file: selectedImage!,
-// uid: _authService.user!.uid
-// );
-// if (pfpURL != null) {
-// await _databaseService.createUserProfile(userProfile: UserProfile(
-// uid: _authService.user!.uid,
-// name: name!,
-// pfpURL: pfpURL,
-// email: email!,
-// access: false),
-// );
-// _alertService.showToast(text: 'Je hebt succesvol een account aangemaakt 💪', icon: Icons.check);
-// }
-// bool login = await _authService.login(email!, password!);
-// if (login) {
-// _alertService.showToast(text: 'Succesvol ingelogd 💪', icon: Icons.check);
-// _navigationService.pushReplacementNamed('/home');
-// } else {
-// _alertService.showToast(text: 'Er is iets mis gegaan, probeer hier in te loggen', icon: Icons.error_outline);
-// _navigationService.pushNamed('/login');
-// }
-// }
-// } else if (selectedImage == null) {
-// _alertService.showToast(text: 'Heb je al een afbeelding gekozen?', icon: Icons.error_outline);
-// } else {
-// _alertService.showToast(text: 'Vul alle tekstvelden correct in', icon: Icons.error_outline);
-// }
-// } catch (e) {
-// print('Niet gelukt');
-// _alertService.showToast(text: 'registratie is gefaald!', icon: Icons.error_outline);
-// }
-// setState(() {
-// isLoading = false;
-// });
-// },
+  Widget _headerText(BuildContext context) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Laten we je website afmaken!",
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: min(MediaQuery.of(context).size.width * 0.03 + MediaQuery.of(context).size.height * 0.02, 36), // Limiting max size to 40
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Vul hier de volgende velden in om ons te helpen je website af te maken.",
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey,
+              fontSize: min(MediaQuery.of(context).size.width * 0.02 + MediaQuery.of(context).size.height * 0.01, 18), // Limiting max size to 22
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _completeForm() {
+    return Form(
+      key: _registerFormKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 20),
+          Text(
+            'wat voor type website had je in gedachten?',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey,
+              fontSize: min(MediaQuery.of(context).size.width * 0.02 + MediaQuery.of(context).size.height * 0.01, 18), // Limiting max size to 22
+            ),
+          ),
+          SizedBox(height: 10),
+          CustomFormField(
+            info: 'waar is je website voor bestemd?\nprobeer het te beschrijven in 1 woord',
+            hintText: 'type website',
+              suggestions: const [
+                'Blog',
+                'Portfolio',
+                'E-commerce',
+                'Nieuwswebsite',
+                'Persoonlijke website',
+                'Forum',
+                'Landeningspagina',
+                'Online CV',
+                'Educatieve website',
+                'Non-profit website',
+                'Fotografie website',
+                'Entertainment website',
+                'Webapplicatie',
+                'Winkelcatalogus',
+                'Restaurant website',
+                'Online community',
+                'Reserveringssysteem',
+                'Social media platform',
+                'Crowdfunding platform',
+                'Evenementenwebsite',
+                'Muziekplatform',
+                'Sportwebsite',
+                'Reisblog',
+                'Vakantieverhuur website',
+              ],
+              height: MediaQuery.of(context).size.height * 0.1,
+            onSaved: (value) {
+              apiUrl = value;
+            },
+          ),
+          const SizedBox(height: 16),
+
+          Text(
+            'hoe groot moet de website worden?',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey,
+              fontSize: min(MediaQuery.of(context).size.width * 0.02 + MediaQuery.of(context).size.height * 0.01, 18), // Limiting max size to 22
+            ),
+          ),
+          SizedBox(height: 10),
+          CustomFormField(
+            info: 'hoe groot wil je jouw website hebben?\ndenk aan:\n* hoeveel pages?\n*wat wil je doen op je website?\n*wees zo uitgebreid mogelijk' ,
+            maxLines: 5,
+            hintText: "vul hier je wensen in",
+            height: MediaQuery.of(context).size.height * 0.2,
+            keyboardType: TextInputType.multiline,
+            onSaved: (value) {},
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'wat wil je makkelijk kunnen bewerken aan je website?',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey,
+              fontSize: min(MediaQuery.of(context).size.width * 0.02 + MediaQuery.of(context).size.height * 0.01, 18), // Limiting max size to 22
+            ),
+          ),
+          SizedBox(height: 5),
+          CustomFormField(
+            keyboardType: TextInputType.multiline,
+            maxLines: 5,
+            info: 'bij je website krijg je een app,\n wat wil je met deze app makkelijk kunnen bewerken op je website?',
+            hintText: "wat wil je kunnen aanpassen?",
+            height: MediaQuery.of(context).size.height * 0.2,
+            onSaved: (value) {
+            },
+          ),
+          const SizedBox(height: 16),
+
+          Text(
+            'overige toevoegingen',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey,
+              fontSize: min(MediaQuery.of(context).size.width * 0.02 + MediaQuery.of(context).size.height * 0.01, 18), // Limiting max size to 22
+            ),
+          ),
+          SizedBox(height: 10),
+          CustomFormField(
+            info: 'hoe groot wil je jouw website hebben?\ndenk aan:\n* hoeveel pages?\n*wat wil je doen op je website?\n*wees zo uitgebreid mogelijk' ,
+            maxLines: 5,
+            hintText: "toevoegingen",
+            height: MediaQuery.of(context).size.height * 0.2,
+            keyboardType: TextInputType.multiline,
+            onSaved: (value) {},
+          ),
+          const SizedBox(height: 16),
+
+          // Button to submit form
+          _registerButton(),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.02 + MediaQuery.of(context).size.width * 0.01,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _registerButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          backgroundColor: Colors.blueAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        onPressed: () async {
+          setState(() {
+            isLoading = true;
+          });
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text("Bedankt!"),
+                content: const Text(
+                    "Uw wensen worden verstuurd via onze chat, kijk even rond in de app...\nwij proberen zo snel mogelijk contact met u op te nemen"
+                ),
+                actions: [
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      // Navigeren naar de wensen invullen pagina
+                      Navigator.of(context).pushNamed('/home');
+                    },
+                  ),
+                  TextButton(
+                    child: const Text("Annuleren"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+          setState(() {
+            isLoading = false;
+          });
+        },
+
+        child: isLoading
+            ? const CircularProgressIndicator()
+            : Row(
+          mainAxisAlignment:  MainAxisAlignment.center,
+          children: const [
+            Text(
+              "Verder gaan",
+              style: TextStyle(fontSize: 20,
+              color: Colors.white),
+            ),
+            Icon(Icons.arrow_forward, color: Colors.white,)
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -13,10 +13,12 @@ class AuthService extends ChangeNotifier {
   User? get user => _user;
   UserProfile? get userProfile => _userProfile;
 
+  // Constructor: Luistert naar wijzigingen in de authenticatiestatus
   AuthService() {
     _firebaseAuth.authStateChanges().listen(_authStateChangesStreamListener);
   }
 
+  // Callback voor auth status veranderingen
   void _authStateChangesStreamListener(User? user) async {
     if (user != null) {
       _user = user;
@@ -28,16 +30,14 @@ class AuthService extends ChangeNotifier {
     notifyListeners(); // Update de UI
   }
 
+  // Haal het gebruikersprofiel op uit Firestore
   Future<UserProfile?> _fetchUserProfile(String uid) async {
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      if (doc.exists) {
-        final data = doc.data();
-        if (data != null) {
-          _userProfile = UserProfile.fromJson(data);
-          notifyListeners(); // Update de UI
-          return _userProfile;
-        }
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        _userProfile = UserProfile.fromJson(doc.data()!);
+        notifyListeners(); // Update de UI
+        return _userProfile;
       }
     } catch (e) {
       print("Error fetching user profile: $e");
@@ -45,6 +45,7 @@ class AuthService extends ChangeNotifier {
     return null;
   }
 
+  // Inloggen met email en wachtwoord
   Future<bool> login(String email, String password) async {
     print('Probeer in te loggen met email: $email');
     try {
@@ -52,10 +53,10 @@ class AuthService extends ChangeNotifier {
         email: email,
         password: password,
       );
-      print('Inloggen geslaagd: ${credential.user}');
-      if (credential.user != null) {
-        _user = credential.user;
+      _user = credential.user; // Sla de ingelogde gebruiker op
+      if (_user != null) {
         await _fetchUserProfile(_user!.uid);
+        print('Inloggen geslaagd: $_user');
         return true;
       }
     } catch (e) {
@@ -64,17 +65,21 @@ class AuthService extends ChangeNotifier {
     return false;
   }
 
+  // Registreren van een nieuwe gebruiker
   Future<bool> signup(String email, String password) async {
     try {
       final credential = await _firebaseAuth.createUserWithEmailAndPassword(
-          email: email, password: password);
+        email: email,
+        password: password,
+      );
+
       if (credential.user != null) {
         _user = credential.user;
         await _firestore.collection('users').doc(_user!.uid).set({
           'uid': _user!.uid,
           'email': _user!.email,
           'access': true,
-          'pfpURL': 'https://example.com/default-profile-pic.png',
+          'pfpURL': 'https://example.com/default-profile-pic.png', // Standaard profielafbeelding
           'name': '',
         });
         await _fetchUserProfile(_user!.uid);
@@ -86,16 +91,36 @@ class AuthService extends ChangeNotifier {
     return false;
   }
 
+  // Afmelden van de gebruiker
   Future<bool> logout() async {
     try {
       await _firebaseAuth.signOut();
-      _user = null;
-      _userProfile = null;
+      _user = null; // Reset de gebruiker
+      _userProfile = null; // Reset het gebruikersprofiel
       notifyListeners(); // Update de UI
       return true;
     } catch (e) {
       print('Error during logout: $e');
     }
     return false;
+  }
+
+  // Verkrijg het toegangstoken van de ingelogde gebruiker
+  Future<String?> getToken() async {
+    try {
+      // Verkrijg het huidige gebruiker
+      User? user = _firebaseAuth.currentUser;
+      if (user != null) {
+        // Verkrijg het token
+        String? token = await user.getIdToken();
+        print('Access token: $token');
+        return token;
+      } else {
+        print('Geen gebruiker ingelogd');
+      }
+    } catch (e) {
+      print('Error getting token: $e');
+    }
+    return null;
   }
 }

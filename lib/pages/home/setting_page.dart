@@ -1,14 +1,17 @@
 import 'dart:io';
+import 'package:avatar_glow/avatar_glow.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:youtube_chat_app/models/user_profile.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
 import 'package:youtube_chat_app/services/auth_service.dart';
 import 'package:youtube_chat_app/services/database_service.dart';
+import 'package:youtube_chat_app/services/local_storage.dart';
 import 'package:youtube_chat_app/services/navigation_service.dart';
-import 'package:youtube_chat_app/services/theme_service.dart';
+import '../../services/theme.dart';
 
 class SettingPage extends StatefulWidget {
   final UserProfile userProfile;
@@ -25,8 +28,10 @@ class _SettingPageState extends State<SettingPage> {
   late AlertService _alertService;
   late DatabaseService _databaseService;
   final ImagePicker _picker = ImagePicker();
-  ThemeMode _themeMode = ThemeMode.system;
   late UserProfile _userProfile;
+
+  var _fullName = '';
+  var _pfpURL = '';
 
   @override
   void initState() {
@@ -36,10 +41,26 @@ class _SettingPageState extends State<SettingPage> {
     _alertService = GetIt.instance.get<AlertService>();
     _databaseService = GetIt.instance.get<DatabaseService>();
     _userProfile = widget.userProfile;
+    _loadUserProfile();
   }
 
-
-
+  Future<void> _loadUserProfile() async {
+    try {
+      UserProfile? userProfile = await _databaseService.getUserProfile();
+      if (userProfile != null) {
+        setState(() {
+          _fullName = userProfile.name ?? 'Onbekend';
+          _pfpURL = userProfile.pfpURL ?? '';
+        });
+      }
+    } catch (e) {
+      print('Error loading user profile: $e');
+      _alertService.showToast(
+        text: 'Fout bij het ophalen van het profiel.',
+        icon: Icons.error_outline,
+      );
+    }
+  }
 
   Future<void> _editProfilePicture() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -61,6 +82,7 @@ class _SettingPageState extends State<SettingPage> {
 
         setState(() {
           _userProfile = _userProfile.copyWith(pfpURL: downloadUrl);
+          _pfpURL = downloadUrl;
         });
 
         _alertService.showToast(text: 'Profile picture updated!', icon: Icons.check);
@@ -83,10 +105,8 @@ class _SettingPageState extends State<SettingPage> {
               contentPadding: EdgeInsets.all(10),
               leading: const Icon(Icons.light_mode),
               title: const Text('Licht'),
-              onTap: () {
-                setState(() {
-                  _themeMode = ThemeMode.light;
-                });
+              onTap: () async {
+                await _updateThemeMode(ThemeMode.light);
                 Navigator.pop(context);
               },
             ),
@@ -94,10 +114,8 @@ class _SettingPageState extends State<SettingPage> {
               contentPadding: EdgeInsets.all(10),
               leading: const Icon(Icons.dark_mode),
               title: const Text('Donker'),
-              onTap: () {
-                setState(() {
-                  _themeMode = ThemeMode.dark;
-                });
+              onTap: () async {
+                await _updateThemeMode(ThemeMode.dark);
                 Navigator.pop(context);
               },
             ),
@@ -105,10 +123,8 @@ class _SettingPageState extends State<SettingPage> {
               contentPadding: EdgeInsets.all(10),
               leading: const Icon(Icons.phone_android),
               title: const Text('Systeem'),
-              onTap: () {
-                setState(() {
-                  _themeMode = ThemeMode.system;
-                });
+              onTap: () async {
+                await _updateThemeMode(ThemeMode.system);
                 Navigator.pop(context);
               },
             ),
@@ -118,93 +134,113 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  Future<void> _updateThemeMode(ThemeMode themeMode) async {
+    await LocalStorage.save('theme_mode', themeMode.toString().split('.').last);
+    Provider.of<ThemeProvider>(context, listen: false).setThemeMode(themeMode);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          _profileSection(context),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: const Color(0x1A000000),
-              ),
-              child: Material(
-                color: Colors.transparent,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          body: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _profileSection(context, themeProvider, _fullName, _pfpURL),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
                 child: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column( // Gebruik Column in plaats van ListView hier
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.dark_mode),
-                        title: const Text('Dark Mode'),
-                        subtitle: Text(_getThemeModeText()),
-                        onTap: _showThemeModeSheet,
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.notifications),
-                        title: const Text('Meldingen'),
-                        subtitle: const Text('Meldingsinstellingen aanpassen'),
-                        onTap: () {
-                        },
-                      ),
-                    ],
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0x1A000000),
                   ),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: const Color(0x1A000000),
-              ),
-              child: InkWell(
-                onTap: () async {
-                  bool result = await _authService.logout();
-                  if (result) {
-                    _navigationService.pushReplacementNamed('/login');
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Uitloggen',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: const Color(0x1A000000),
+                        border: Border.all(
+                          color: Colors.white, // Kies de kleur van de rand
+                          width: 2, // Stel de dikte van de rand in
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.logout,
-                        color: Colors.black,
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.dark_mode),
+                            title: const Text('Dark Mode'),
+                            subtitle: Text(_getThemeModeText(themeProvider)),
+                            onTap: _showThemeModeSheet,
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.notifications),
+                            title: const Text('Meldingen'),
+                            subtitle: const Text('Meldingsinstellingen aanpassen'),
+                            onTap: () {},
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
+              Padding(
+                padding: EdgeInsets.all( themeProvider.themeMode == ThemeMode.dark ? 50 : 8),
+                child: InkWell(
+                    onTap: () async {
+                      bool result = await _authService.logout();
+                      if (result) {
+                        _navigationService.pushReplacementNamed('/login');
+                      }
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: const Color(0x1A000000),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 2, // Stel de dikte van de rand in
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Uitloggen',
+                            style: TextStyle(
+                              color: themeProvider.themeMode == ThemeMode.dark
+                                  ? Colors.blueGrey
+                                  : Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.logout,
+                            color: themeProvider.themeMode == ThemeMode.dark
+                                ? Colors.blueGrey
+                                : Colors.black,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-
-  String _getThemeModeText() {
-    switch (_themeMode) {
+  String _getThemeModeText(ThemeProvider themeProvider) {
+    switch (themeProvider.themeMode) {
       case ThemeMode.light:
         return 'Licht';
       case ThemeMode.dark:
@@ -215,9 +251,9 @@ class _SettingPageState extends State<SettingPage> {
     }
   }
 
-  Widget _profileSection(BuildContext context) {
+  Widget _profileSection(BuildContext context, ThemeProvider themeProvider, fullName, pfpURL) {
     return Container(
-      padding: const EdgeInsets.all(10.0),
+      padding: const EdgeInsets.all(30.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -242,7 +278,7 @@ class _SettingPageState extends State<SettingPage> {
                               shape: BoxShape.rectangle,
                               image: DecorationImage(
                                 fit: BoxFit.cover,
-                                image: AssetImage('assets/image/Schermafbeelding 2024-07-31 104216.png'),
+                                image: NetworkImage(pfpURL)
                               ),
                             ),
                           ),
@@ -251,12 +287,19 @@ class _SettingPageState extends State<SettingPage> {
                     },
                   );
                 },
-                child: CircleAvatar(
-                  radius: 80,
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: AssetImage('assets/image/Schermafbeelding 2024-07-31 104216.png'),
+                child: AvatarGlow(
+                  glowCount: 1,
+                  startDelay: const Duration(seconds: 2),
+                  glowRadiusFactor: 0.3,
+                  glowColor: Colors.blueGrey,
+                  glowShape: BoxShape.circle,
+                  curve: Curves.fastOutSlowIn,
+                    child: CircleAvatar(
+                      backgroundImage: NetworkImage(pfpURL),
+                      radius: 80.0,
+                    ),
+                  ),
                 ),
-              ),
               Positioned(
                 bottom: 5,
                 right: 5,
@@ -264,7 +307,7 @@ class _SettingPageState extends State<SettingPage> {
                   onTap: _editProfilePicture,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: themeProvider.themeMode == ThemeMode.dark ? Colors.blueGrey : Colors.blue[200],
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -289,9 +332,11 @@ class _SettingPageState extends State<SettingPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Onbekend', // Gebruik een fallback voor als gebruikersnaam niet beschikbaar is
-            style: const TextStyle(
-              color: Colors.white,
+            '$fullName',
+            style: TextStyle(
+              color: themeProvider.themeMode == ThemeMode.dark
+                  ? Colors.blueGrey
+                  : Colors.black,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),

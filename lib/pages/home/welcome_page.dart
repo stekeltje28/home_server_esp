@@ -12,8 +12,13 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
-  List<FlSpot> spots = [];
-  int _totaal_aantal = 0; // Initialize as double
+  List<FlSpot> dailySpots = [];
+  List<FlSpot> weeklySpots = [];
+  List<FlSpot> monthlySpots = [];
+  List<FlSpot> yearlySpots = [];
+  int _totaal_aantal = 0;
+  int _unieke_bezoekers = 0;
+  int _gemiddeld_aantal_per_week = 0;
   Color _status_color = Colors.red;
   IconData _status_icon = Icons.error_outline_sharp;
 
@@ -21,23 +26,29 @@ class _WelcomePageState extends State<WelcomePage> {
   void initState() {
     super.initState();
     _fetchVisitorData();
-    _fetchVisitorDataForChar();
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(8.0),
       child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
           _siteonline(),
           const SizedBox(height: 20),
-          aantal_bezoekers(_totaal_aantal.toString()),
+          aantal_bezoekers(_totaal_aantal.toString(), _unieke_bezoekers.toString()),
           const SizedBox(height: 20),
-          _container(),
+          gemiddeldAantalBezoekers(_gemiddeld_aantal_per_week.toString()),
+          const SizedBox(height: 20),
+          _lineChart(dailySpots, 'Aantal dagelijkse gebruikers'),
+          const SizedBox(height: 20),
+          _lineChart(weeklySpots, 'Aantal wekelijkse gebruikers'),
+          const SizedBox(height: 20),
+          _lineChart(monthlySpots, 'Aantal maandelijkse gebruikers'),
+          const SizedBox(height: 20),
+          _lineChart(yearlySpots, 'Aantal jaarlijkse gebruikers'),
           const SizedBox(height: 120),
           _bottomtext(),
           const SizedBox(height: 20),
@@ -49,13 +60,9 @@ class _WelcomePageState extends State<WelcomePage> {
   Widget _bottomtext() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             const Text(
               'Hulp nodig? Bel! |',
@@ -72,31 +79,25 @@ class _WelcomePageState extends State<WelcomePage> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'of klik hier om te chatten',
-              style: TextStyle(color: Color(0x2F000000)),
-            ),
-          ],
-        )
+        const SizedBox(height: 8),
+        const Text(
+          'of klik hier om te chatten',
+          style: TextStyle(color: Color(0x2F000000)),
+        ),
       ],
     );
   }
 
   Widget _siteonline() {
     return CustomContainer(
+      padding: const EdgeInsets.all(12.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
             'Site Status:',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
@@ -116,9 +117,9 @@ class _WelcomePageState extends State<WelcomePage> {
                 radius: 12,
                 backgroundColor: _status_color,
                 child: Icon(
-                  _status_icon as IconData?,
+                  _status_icon,
                   size: 16,
-                  color: Color(0x2F000000),
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -128,23 +129,47 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  Widget aantal_bezoekers(String totaal_aantal) {
+  Widget aantal_bezoekers(String totaalAantal, String uniekeBezoekers) {
     return CustomContainer(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Totaal aantal bezoekers:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              const Text(
+                'Aantal page requests:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
               Text(
-                totaal_aantal, // This is now a string
+                totaalAantal,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Unieke bezoekers:',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              Text(
+                uniekeBezoekers,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -158,45 +183,63 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 
-  Widget _container() {
+  Widget gemiddeldAantalBezoekers(String gemiddeldAantal) {
     return CustomContainer(
-      child: _lineChart(),
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Gemiddeld aantal bezoekers per week:',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          Text(
+            gemiddeldAantal,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.black54,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Future<void> _fetchVisitorData() async {
-    final url = Uri.parse('http://localhost:8000/api/count-visitors/'); // Make sure this URL is correct
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-
-        final data = json.decode(response.body)['unique_visitors'];
-        setState(() {
-          _status_color = Colors.green;
-          _status_icon = Icons.check;
-          _totaal_aantal = data.toInt(); // Set the total number of visitors
-        });
-      } else {
-        print('Failed to fetch visitors: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
-
-  Future<void> _fetchVisitorDataForChar() async {
     final url = Uri.parse('http://localhost:8000/api/count-visitors/');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
-        final data = json.decode(response.body)['weekly_visitors'];
+        final data = json.decode(response.body);
+        print('API response: $data');
 
         setState(() {
-          // Zet de ontvangen data om in FlSpot voor de grafiek
-          spots = [];
-          data.forEach((week, aantal) {
-            spots.add(FlSpot(double.parse(week), aantal.toDouble()));
-          });
+          _status_color = Colors.green;
+          _status_icon = Icons.check;
+          _totaal_aantal = data['total_visitors'] ?? 0;
+          _unieke_bezoekers = data['unique_visitors'] ?? 0;
+          _gemiddeld_aantal_per_week = data['weekly_visitors']['count'] ?? 0;
+
+          // Voor dagelijkse bezoekers
+          dailySpots = [];
+          dailySpots.add(FlSpot(1, data['daily_visitors']['count'].toDouble())); // Dit kan je aanpassen voor meerdere dagen als nodig
+
+          // Voor wekelijkse bezoekers
+          weeklySpots = [];
+          weeklySpots.add(FlSpot(data['weekly_visitors']['week_number'].toDouble(), data['weekly_visitors']['count'].toDouble()));
+
+          // Voor maandelijkse bezoekers
+          monthlySpots = [];
+          monthlySpots.add(FlSpot(data['monthly_visitors']['month'].toDouble(), data['monthly_visitors']['count'].toDouble()));
+
+          // Voor jaarlijkse bezoekers
+          yearlySpots = [];
+          yearlySpots.add(FlSpot(data['yearly_visitors']['year'].toDouble(), data['yearly_visitors']['count'].toDouble()));
         });
       } else {
         print('Failed to fetch visitors: ${response.statusCode}');
@@ -206,116 +249,84 @@ class _WelcomePageState extends State<WelcomePage> {
     }
   }
 
-  Widget _lineChart() {
-    return Column(
-      children: [
-        const Text(
-          'Aantal websitegebruikers',
-          style: TextStyle(fontSize: 20),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          height: 300,
-          child: LineChart(
-            LineChartData(
-              lineBarsData: [
-                LineChartBarData(
-                  spots: spots.isNotEmpty ? spots : [const FlSpot(0, 0)],
-                  isCurved: true,
-                  color: Colors.blueAccent,
-                  barWidth: 3,
-                  belowBarData: BarAreaData(
-                    show: true,
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blueAccent.withOpacity(0.2),
-                        Colors.blueAccent.withOpacity(0.0),
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+  Widget _lineChart(List<FlSpot> spots, String title) {
+    if (spots.isEmpty) {
+      return const SizedBox(); // Geen gegevens om weer te geven
+    }
+
+    // Bereken minY en maxY op basis van de waarden in spots
+    double minY = spots.map((e) => e.y).reduce((a, b) => a < b ? a : b);
+    double maxY = spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) + 1;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        children: [
+          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 300,
+            child: LineChart(
+              LineChartData(
+                minY: minY,
+                maxY: maxY,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: Colors.blueAccent,
+                    barWidth: 3,
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blueAccent.withOpacity(0.2),
+                          Colors.blueAccent.withOpacity(0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                    dotData: FlDotData(show: true),
+                  ),
+                ],
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          '${value.toInt()}',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  dotData: const FlDotData(show: true),
-                ),
-              ],
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 40,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
-                        '${value.toInt()}',
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          '${value.toInt()}',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
-                        'Week ${value.toInt()}', // Gebruik weeknummer in plaats van dagen
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              borderData: FlBorderData(
-                show: true,
-                border: Border.all(color: Colors.grey.withOpacity(0.2)),
-              ),
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: true,
-                horizontalInterval: 1.0,
-                verticalInterval: 1.0,
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(
-                    color: Colors.grey.withOpacity(0.1),
-                    strokeWidth: 1,
-                  );
-                },
-                getDrawingVerticalLine: (value) {
-                  return FlLine(
-                    color: Colors.grey.withOpacity(0.1),
-                    strokeWidth: 1,
-                  );
-                },
-              ),
-              lineTouchData: LineTouchData(
-                touchTooltipData: LineTouchTooltipData(
-                  getTooltipItems: (touchedSpots) {
-                    return touchedSpots.map((touchedSpot) {
-                      return LineTooltipItem(
-                        'gebruikers: ${touchedSpot.y}',
-                        const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    }).toList();
-                  },
-                ),
-                handleBuiltInTouches: true,
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
-
-
 }

@@ -22,7 +22,7 @@ class api {
 
   Future<void> deleteContent(int id, String url) async {
     final response = await http.delete(
-      Uri.parse('http://localhost:8000/api/$url/${id}/'),
+      Uri.parse('http://localhost:8000/api/$url/$id/'),
     );
   }
 

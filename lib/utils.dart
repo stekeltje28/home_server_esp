@@ -1,6 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:youtube_chat_app/firebase_options.dart';
+import 'package:youtube_chat_app/pages/home_page.dart';
 import 'package:youtube_chat_app/services/alert_service.dart';
 import 'package:youtube_chat_app/services/auth_service.dart';
 import 'package:youtube_chat_app/services/database_service.dart';
@@ -8,13 +7,6 @@ import 'package:youtube_chat_app/services/local_storage.dart';
 import 'package:youtube_chat_app/services/media_service.dart';
 import 'package:youtube_chat_app/services/navigation_service.dart';
 import 'package:youtube_chat_app/services/storage_service.dart';
-import 'package:youtube_chat_app/services/theme_service.dart';
-
-Future<void> setupFirebase() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-}
 
 Future<void> registerServices() async {
   final GetIt getIt = GetIt.instance;
@@ -38,6 +30,9 @@ Future<void> registerServices() async {
   );
   getIt.registerSingleton<LocalStorage>(
     LocalStorage(),
+  );
+  getIt.registerSingleton<HomePage>(
+    HomePage(),
   );
 
 }

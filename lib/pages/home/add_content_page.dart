@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:youtube_chat_app/pages/content_toevoegen/muziek.dart';
 import 'package:youtube_chat_app/pages/content_toevoegen/nieuws.dart';
 import 'package:youtube_chat_app/pages/content_toevoegen/videos.dart';
-import 'package:youtube_chat_app/pages/template.dart';
 
 class AddContentPage extends StatefulWidget {
   const AddContentPage({super.key});

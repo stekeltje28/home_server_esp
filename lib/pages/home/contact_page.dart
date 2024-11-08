@@ -320,6 +320,7 @@ class _ContactPageState extends State<ContactPage> {
                                 user.uid!,
                               );
                             }
+                            print('user: $user');
                             _navigationService.push(
                               MaterialPageRoute(
                                 builder: (context) {
