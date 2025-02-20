@@ -13,7 +13,6 @@ import 'package:youtube_chat_app/utils.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
   // Initialize Firebase with error handling
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -57,9 +56,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigationService.navigatorKey,
       title: 'easy',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: Provider.of<ThemeProvider>(context).themeMode,
       routes: navigationService.routes,
       initialRoute: authService.user != null ? "/home" : "/login",
       builder: (context, child) {

@@ -44,7 +44,6 @@ class _CompletePageState extends State<CompletePage> {
     _alertService = _getIt.get<AlertService>();
     _storageService = _getIt.get<StorageService>();
     _databaseService = _getIt.get<DatabaseService>();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +83,7 @@ class _CompletePageState extends State<CompletePage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: _buildUI(context, constraints),
+                 // child: _buildUI(context, constraints),
                 ),
               ],
             ),
@@ -112,8 +111,8 @@ class _CompletePageState extends State<CompletePage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _headerText(context),
-                  _completeForm()
+                //  _headerText(context),
+               //   _completeForm()
                 ],
               ),
             ),
@@ -259,12 +258,10 @@ class _CompletePageState extends State<CompletePage> {
             onSaved: (value) {},
           ),
           const SizedBox(height: 16),
-
-          // Button to submit form
-          _registerButton(),
+          //_registerButton(),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.02 + MediaQuery.of(context).size.width * 0.01,
-          ),
+          )
         ],
       ),
     );
@@ -331,5 +328,11 @@ class _CompletePageState extends State<CompletePage> {
         ),
       ),
     );
+  }
+}
+
+  @override
+  Widget build(BuildContext context) {
+    throw UnimplementedError();
   }
 }

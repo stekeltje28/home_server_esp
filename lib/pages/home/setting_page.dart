@@ -11,6 +11,7 @@ import 'package:youtube_chat_app/services/auth_service.dart';
 import 'package:youtube_chat_app/services/database_service.dart';
 import 'package:youtube_chat_app/services/local_storage.dart';
 import 'package:youtube_chat_app/services/navigation_service.dart';
+import 'package:youtube_chat_app/widgets/pfpdialog.dart';
 import '../../services/theme.dart';
 
 class SettingPage extends StatefulWidget {
@@ -136,7 +137,8 @@ class _SettingPageState extends State<SettingPage> {
 
   Future<void> _updateThemeMode(ThemeMode themeMode) async {
     await LocalStorage.save('theme_mode', themeMode.toString().split('.').last);
-    Provider.of<ThemeProvider>(context, listen: false).setThemeMode(themeMode);
+    Provider.of<ThemeProvider>(context, listen: false).loadThemeMode();
+    _getThemeModeText();
   }
 
   @override
@@ -149,7 +151,7 @@ class _SettingPageState extends State<SettingPage> {
             children: [
               _profileSection(context, themeProvider, _fullName, _pfpURL),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(themeProvider.themeMode == ThemeMode.dark ? 18 : 8),
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -167,13 +169,13 @@ class _SettingPageState extends State<SettingPage> {
                           width: 2, // Stel de dikte van de rand in
                         ),
                       ),
-                      padding: const EdgeInsets.all(24.0),
+                      padding: const EdgeInsets.all(20.0),
                       child: Column(
                         children: [
                           ListTile(
                             leading: const Icon(Icons.dark_mode),
                             title: const Text('Dark Mode'),
-                            subtitle: Text(_getThemeModeText(themeProvider)),
+                            subtitle: Text(_getThemeModeText()),
                             onTap: _showThemeModeSheet,
                           ),
                           ListTile(
@@ -189,7 +191,7 @@ class _SettingPageState extends State<SettingPage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all( themeProvider.themeMode == ThemeMode.dark ? 50 : 8),
+                padding: EdgeInsets.all(themeProvider.themeMode == ThemeMode.dark ? 18 : 8),
                 child: InkWell(
                     onTap: () async {
                       bool result = await _authService.logout();
@@ -239,16 +241,9 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  String _getThemeModeText(ThemeProvider themeProvider) {
-    switch (themeProvider.themeMode) {
-      case ThemeMode.light:
-        return 'Licht';
-      case ThemeMode.dark:
-        return 'Donker';
-      case ThemeMode.system:
-      default:
-        return 'Systeem';
-    }
+  String _getThemeModeText() {
+    var theme = LocalStorage.get("theme_mode");
+    return theme;
   }
 
   Widget _profileSection(BuildContext context, ThemeProvider themeProvider, fullName, pfpURL) {
@@ -265,30 +260,17 @@ class _SettingPageState extends State<SettingPage> {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
-                      return Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.8,
-                            height: MediaQuery.of(context).size.width * 0.8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(pfpURL)
-                              ),
-                            ),
-                          ),
-                        ),
+                      return PfpDialog(
+                        pfpURL: pfpURL.isEmpty ? '' : pfpURL,
+                        onEdit: _editProfilePicture,
+                        themeProvider: themeProvider,
+                        edit: true,
                       );
                     },
                   );
                 },
                 child: AvatarGlow(
-                  glowCount: 1,
+                  glowCount: 2,
                   startDelay: const Duration(seconds: 2),
                   glowRadiusFactor: 0.3,
                   glowColor: Colors.blueGrey,

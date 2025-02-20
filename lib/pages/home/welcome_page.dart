@@ -30,29 +30,32 @@ class _WelcomePageState extends State<WelcomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const SizedBox(height: 20),
-          _siteonline(),
-          const SizedBox(height: 20),
-          aantal_bezoekers(_totaal_aantal.toString(), _unieke_bezoekers.toString()),
-          const SizedBox(height: 20),
-          gemiddeldAantalBezoekers(_gemiddeld_aantal_per_week.toString()),
-          const SizedBox(height: 20),
-          _lineChart(dailySpots, 'Aantal dagelijkse gebruikers'),
-          const SizedBox(height: 20),
-          _lineChart(weeklySpots, 'Aantal wekelijkse gebruikers'),
-          const SizedBox(height: 20),
-          _lineChart(monthlySpots, 'Aantal maandelijkse gebruikers'),
-          const SizedBox(height: 20),
-          _lineChart(yearlySpots, 'Aantal jaarlijkse gebruikers'),
-          const SizedBox(height: 120),
-          _bottomtext(),
-          const SizedBox(height: 20),
-        ],
+    return Scaffold(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            _siteonline(),
+            const SizedBox(height: 20),
+            aantal_bezoekers(
+                _totaal_aantal.toString(), _unieke_bezoekers.toString()),
+            const SizedBox(height: 20),
+            gemiddeldAantalBezoekers(_gemiddeld_aantal_per_week.toString()),
+            const SizedBox(height: 20),
+            _lineChart(dailySpots, 'Aantal dagelijkse gebruikers'),
+            const SizedBox(height: 20),
+            _lineChart(weeklySpots, 'Aantal wekelijkse gebruikers'),
+            const SizedBox(height: 20),
+            _lineChart(monthlySpots, 'Aantal maandelijkse gebruikers'),
+            const SizedBox(height: 20),
+            _lineChart(yearlySpots, 'Aantal jaarlijkse gebruikers'),
+            const SizedBox(height: 120),
+            _bottomtext(),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
@@ -64,12 +67,18 @@ class _WelcomePageState extends State<WelcomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'Hulp nodig? Bel! |',
-              style: TextStyle(color: Color(0x2F000000)),
+              style: TextStyle(
+                color: Theme
+                    .of(context)
+                    .textTheme
+                    .bodyLarge
+                    ?.color,
+              ),
             ),
             GestureDetector(
-              child: const Text(
+              child: Text(
                 ' 0616565253',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -80,9 +89,15 @@ class _WelcomePageState extends State<WelcomePage> {
           ],
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'of klik hier om te chatten',
-          style: TextStyle(color: Color(0x2F000000)),
+          style: TextStyle(
+            color: Theme
+                .of(context)
+                .textTheme
+                .bodyLarge
+                ?.color,
+          ),
         ),
       ],
     );
@@ -99,7 +114,6 @@ class _WelcomePageState extends State<WelcomePage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
             ),
           ),
           Row(
@@ -109,7 +123,6 @@ class _WelcomePageState extends State<WelcomePage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black54,
                 ),
               ),
               const SizedBox(width: 8),
@@ -143,7 +156,6 @@ class _WelcomePageState extends State<WelcomePage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
                 ),
               ),
               Text(
@@ -151,7 +163,6 @@ class _WelcomePageState extends State<WelcomePage> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black54,
                 ),
               ),
             ],
@@ -165,7 +176,6 @@ class _WelcomePageState extends State<WelcomePage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
                 ),
               ),
               Text(
@@ -173,7 +183,6 @@ class _WelcomePageState extends State<WelcomePage> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black54,
                 ),
               ),
             ],
@@ -194,7 +203,6 @@ class _WelcomePageState extends State<WelcomePage> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
             ),
           ),
           Text(
@@ -202,7 +210,6 @@ class _WelcomePageState extends State<WelcomePage> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Colors.black54,
             ),
           ),
         ],
@@ -227,19 +234,24 @@ class _WelcomePageState extends State<WelcomePage> {
 
           // Voor dagelijkse bezoekers
           dailySpots = [];
-          dailySpots.add(FlSpot(1, data['daily_visitors']['count'].toDouble())); // Dit kan je aanpassen voor meerdere dagen als nodig
+          dailySpots.add(FlSpot(1, data['daily_visitors']['count']
+              .toDouble())); // Dit kan je aanpassen voor meerdere dagen als nodig
 
           // Voor wekelijkse bezoekers
           weeklySpots = [];
-          weeklySpots.add(FlSpot(data['weekly_visitors']['week_number'].toDouble(), data['weekly_visitors']['count'].toDouble()));
+          weeklySpots.add(FlSpot(
+              data['weekly_visitors']['week_number'].toDouble(),
+              data['weekly_visitors']['count'].toDouble()));
 
           // Voor maandelijkse bezoekers
           monthlySpots = [];
-          monthlySpots.add(FlSpot(data['monthly_visitors']['month'].toDouble(), data['monthly_visitors']['count'].toDouble()));
+          monthlySpots.add(FlSpot(data['monthly_visitors']['month'].toDouble(),
+              data['monthly_visitors']['count'].toDouble()));
 
           // Voor jaarlijkse bezoekers
           yearlySpots = [];
-          yearlySpots.add(FlSpot(data['yearly_visitors']['year'].toDouble(), data['yearly_visitors']['count'].toDouble()));
+          yearlySpots.add(FlSpot(data['yearly_visitors']['year'].toDouble(),
+              data['yearly_visitors']['count'].toDouble()));
         });
       } else {
         print('Failed to fetch visitors: ${response.statusCode}');
@@ -259,48 +271,46 @@ class _WelcomePageState extends State<WelcomePage> {
     double maxY = spots.map((e) => e.y).reduce((a, b) => a > b ? a : b) + 1;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      // Ruimte tussen grafieken
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 300,
+          Text(
+            title,
+            style: TextStyle(
+              color: Theme
+                  .of(context)
+                  .textTheme
+                  .bodyLarge
+                  ?.color,
+              fontSize: 22,
+              fontWeight: FontWeight.bold, // Meer nadruk op de titel
+            ),
+          ),
+          const SizedBox(height: 12),
+          AspectRatio(
+            aspectRatio: 1.7,
             child: LineChart(
               LineChartData(
                 minY: minY,
                 maxY: maxY,
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: Colors.blueAccent,
-                    barWidth: 3,
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blueAccent.withOpacity(0.2),
-                          Colors.blueAccent.withOpacity(0.0),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                    dotData: FlDotData(show: true),
-                  ),
-                ],
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 40,
-                      getTitlesWidget: (value, meta) {
+                      getTitlesWidget: (value, _) {
                         return Text(
-                          '${value.toInt()}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
+                          value.toInt().toString(),
+                          style: TextStyle(
+                            color: Theme
+                                .of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.color,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
                           ),
                         );
                       },
@@ -309,18 +319,56 @@ class _WelcomePageState extends State<WelcomePage> {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 40,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          '${value.toInt()}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
+                      getTitlesWidget: (value, _) =>
+                          Text(
+                            value.toInt().toString(),
+                            style: TextStyle(
+                              color: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.color,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
                           ),
-                        );
-                      },
                     ),
                   ),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawHorizontalLine: true,
+                  horizontalInterval: (maxY - minY) / 5, // Betere gridverdeling
+                  getDrawingHorizontalLine: (value) =>
+                      FlLine(
+                        color: Theme
+                            .of(context)
+                            .dividerColor,
+                        strokeWidth: 1,
+                      ),
+                ),
+                borderData: FlBorderData(
+                    show: true, border: Border.all(color: Theme
+                    .of(context)
+                    .dividerColor, width: 1)),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: Colors.blueAccent,
+                    barWidth: 5,
+                    isStrokeCapRound: true,
+                    // Zorgt voor een ronde lijn
+                    belowBarData: BarAreaData(
+                        show: true, color: Colors.blueAccent.withOpacity(0.3)),
+                    dotData: FlDotData(
+                        show: false), // Verberg de punten op de lijn
+                  ),
+                ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                  ),
+                  handleBuiltInTouches: true,
                 ),
               ),
             ),
@@ -330,3 +378,4 @@ class _WelcomePageState extends State<WelcomePage> {
     );
   }
 }
+

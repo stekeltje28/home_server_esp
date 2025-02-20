@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_chat_app/pages/content_toevoegen/muziek.dart';
-// Voeg hier extra pagina's toe die je wilt gebruiken voor navigatie
 
 class ViewContent extends StatefulWidget {
   const ViewContent({super.key});
@@ -13,6 +12,7 @@ class _AddContentPageState extends State<ViewContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Zorgen voor consistente achtergrondkleur
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -40,6 +40,15 @@ class _AddContentPageState extends State<ViewContent> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.5)
+                : Colors.grey.withOpacity(0.3),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -50,7 +59,7 @@ class _AddContentPageState extends State<ViewContent> {
             padding: const EdgeInsets.all(10.0),
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -63,15 +72,13 @@ class _AddContentPageState extends State<ViewContent> {
             LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
                 if (constraints.maxWidth < 500) {
-                  // Als de beschikbare breedte kleiner is dan 500 pixels
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Wrap(
-                      spacing: 10.0, // Ruimte tussen knoppen horizontaal
-                      runSpacing: 10.0, // Ruimte tussen knoppen verticaal
+                      spacing: 10.0,
+                      runSpacing: 10.0,
                       alignment: WrapAlignment.spaceEvenly,
                       children: [
-                        // 3 unieke functies voor Nieuwsartikelen
                         _buildOptionButton('Toevoegen', Icons.add, toevoegen),
                         _buildOptionButton('Inzien', Icons.remove_red_eye, inzien),
                         _buildOptionButton('Aanpassen', Icons.edit, aanpassen),
@@ -79,7 +86,6 @@ class _AddContentPageState extends State<ViewContent> {
                     ),
                   );
                 } else {
-                  // Als de beschikbare breedte groter is dan 500 pixels
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
@@ -110,17 +116,37 @@ class _AddContentPageState extends State<ViewContent> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 12.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: const Color(0x4DFFFFFF),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0x4DFFFFFF)
+              : const Color(0xB3FFFFFF),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withOpacity(0.2)
+                  : Colors.grey.withOpacity(0.3),
+              blurRadius: 5,
+              spreadRadius: 2,
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.max,
           children: [
-            Text(text),
+            Text(
+              text,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(width: 10),
-            Icon(icon),
+            Icon(
+              icon,
+              color: Colors.black,
+            ),
           ],
         ),
       ),
@@ -136,17 +162,37 @@ class _AddContentPageState extends State<ViewContent> {
         );
       },
       child: Container(
-        width: width, // Breedte aanpassen aan het scherm
-        padding: const EdgeInsets.symmetric(vertical: 5.0),
+        width: width,
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: const Color(0x4DFFFFFF),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0x4DFFFFFF)
+              : const Color(0xB3FFFFFF),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.black.withOpacity(0.2)
+                  : Colors.grey.withOpacity(0.3),
+              blurRadius: 5,
+              spreadRadius: 2,
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Text(text),
-            Icon(icon),
+            Text(
+              text,
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Icon(
+              icon,
+              color: Colors.black,
+            ),
           ],
         ),
       ),

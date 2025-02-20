@@ -105,10 +105,10 @@ class _VideoState extends State<AddVideos> {
       if (pickedFile != null) {
         setState(() {
           _selectedVideo = File(pickedFile.path);
-          _videoController = VideoPlayerController.file(_selectedVideo!)
-            ..initialize().then((_) {
-              setState(() {});
-            });
+          _videoController = VideoPlayerController.file(_selectedVideo!);
+              setState(() {
+                _videoController = VideoPlayerController.file(_selectedVideo!);
+              });
         });
       } else {
         _alertService.showToast(text: 'Error selecting video', icon: Icons.error_outline);

@@ -26,21 +26,18 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final _key = GlobalKey<ScaffoldState>();
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final GetIt _getIt = GetIt.instance;
   late AuthService _authService;
   late NavigationService _navigationService;
   late AlertService _alertService;
   late DatabaseService _databaseService;
-  late ThemeMode _themeMode;
+  late ThemeProvider _themeProvider;
 
   String _headText = 'Welkom';
   String _fullName = 'onbekend';
   String _pfpURL = '';
   int currentIndex = 0;
-
-  final ImagePicker _picker = ImagePicker();
 
   final List<Widget> _pages = [
     const WelcomePage(),
@@ -57,26 +54,35 @@ class _HomePageState extends State<HomePage> {
     _navigationService = _getIt.get<NavigationService>();
     _alertService = _getIt.get<AlertService>();
     _databaseService = _getIt.get<DatabaseService>();
-    loadThemeMode();
+    _themeProvider = context.read<ThemeProvider>();
+
+    WidgetsBinding.instance.addObserver(this);
+
+    _updateThemeFromSystem();
     _loadUserProfile();
     _updateHeadText();
   }
 
-  Future<void> loadThemeMode() async {
-    final themeMode = await LocalStorage.get('theme_mode');
-    // Pas de theme-instellingen aan via Provider
-    switch (themeMode) {
-      case 'dark':
-        context.read<ThemeProvider>().setThemeMode(ThemeMode.dark);
-        break;
-      case 'light':
-        context.read<ThemeProvider>().setThemeMode(ThemeMode.light);
-        break;
-      case 'system':
-      default:
-        context.read<ThemeProvider>().setThemeMode(ThemeMode.system);
-        break;
-    }
+  @override
+  void dispose() {
+    // Verwijder de observer om geheugenlekken te voorkomen
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Deze methode wordt aangeroepen als het systeemthema verandert
+  @override
+  void didChangePlatformBrightness() {
+    _updateThemeFromSystem();
+  }
+
+  // Wijzig het thema op basis van het systeem
+  void _updateThemeFromSystem() {
+    final systemBrightness = WidgetsBinding.instance.window.platformBrightness;
+    final newThemeMode = systemBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+
+    // Stel het nieuwe thema in
+    _themeProvider.setThemeMode(newThemeMode);
   }
 
   Future<void> _loadUserProfile() async {
@@ -110,14 +116,14 @@ class _HomePageState extends State<HomePage> {
         "Stuur ons een bericht!"
       ],
       [
-        'voeg je content toe!',
-        'bepaal je eigen style!',
-        'doe het makkelijk en snel!'
+        'Voeg je content toe!',
+        'Bepaal je eigen stijl!',
+        'Doe het makkelijk en snel!'
       ],
       [
-        'verbeter je content!',
-        'zie wat je hebt!',
-        'beheer je content!'
+        'Verbeter je content!',
+        'Zie wat je hebt!',
+        'Beheer je content!'
       ],
       [
         "Dit zijn de instellingen.",
@@ -134,7 +140,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>( // Gebruik Consumer om het thema dynamisch aan te passen
+    return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
         // Pas de statusbalkkleur aan op basis van het thema
         SystemChrome.setSystemUIOverlayStyle(
@@ -157,7 +163,6 @@ class _HomePageState extends State<HomePage> {
           theme: themeProvider.themeData,
           themeMode: themeProvider.themeMode,
           home: Scaffold(
-            key: _key,
             bottomNavigationBar: BottomBarInspiredFancy(
               items: const [
                 TabItem(icon: Icons.home, title: 'Home'),
@@ -184,60 +189,54 @@ class _HomePageState extends State<HomePage> {
                 });
               },
             ),
-            body: Stack(
+            body: Column(
               children: [
-                Column(
-                  children: [
-                    SizedBox(height: 30),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _headText,
-                            style: TextStyle(
-                              color: themeProvider.themeMode == ThemeMode.dark
-                                  ? Colors.blueGrey
-                                  : Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: min(
-                                  MediaQuery.of(context).size.width * 0.035 +
-                                      MediaQuery.of(context).size.height * 0.010,
-                                  32),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                            Text(
-                              _fullName,
-                              style: TextStyle(
-                                color: themeProvider.themeMode == ThemeMode.dark
-                                    ? Colors.blueGrey
-                                    : Colors.black,
-                                fontSize: min(
-                                    MediaQuery.of(context).size.width * 0.03 +
-                                        MediaQuery.of(context).size.height * 0.01,
-                                    25),
-                              ),
-                            ),
-                          const SizedBox(height: 5),
-                          Divider(
-                            thickness: 0.2,
-                            color: Theme.of(context).dividerColor,
-                            indent: 10,
-                            endIndent: 10,
-                          ),
-                        ],
+                SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (currentIndex != 4)
+                      Text(
+                        _headText,
+                        style: TextStyle(
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.blueGrey
+                              : Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: IndexedStack(
-                        index: currentIndex,
-                        children: _pages,
+                      if (currentIndex != 4)
+                      const SizedBox(height: 4),
+                      if (currentIndex != 4)
+                        Text(
+                          _fullName,
+                          style: TextStyle(
+                            color: themeProvider.themeMode == ThemeMode.dark
+                                ? Colors.blueGrey
+                                : Colors.black,
+                            fontSize: 18,
+                          ),
+                        ),
+                      if (currentIndex != 4)
+                      const SizedBox(height: 5),
+                      if (currentIndex != 4)
+                      Divider(
+                        thickness: 0.2,
+                        color: Theme.of(context).dividerColor,
+                        indent: 10,
+                        endIndent: 10,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: currentIndex,
+                    children: _pages,
+                  ),
                 ),
               ],
             ),

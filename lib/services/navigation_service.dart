@@ -17,7 +17,7 @@ class NavigationService {
     "/register": (context) => const RegisterPage(),
     "/home": (context) =>  const HomePage(),
     "/contact": (context) => const SupportPage(),
-    "/complete": (context) => const CompletePage(),
+   // "/complete": (context) => const CompletePage(),
     "/confirm_page": (context) => const ConfirmPage(),
 
 
