@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = "http://192.168.x.x:5555"; // Vervang met je server IP
+  final String baseUrl = "http://devionyx.com:5555"; // Vervang met je server IP
 
   // 🟢 Haal temperatuur op
   Future<Map<String, dynamic>?> fetchTemperature() async {
