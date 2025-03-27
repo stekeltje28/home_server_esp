@@ -10,7 +10,7 @@ import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../services/navigation_service.dart';
 import '../services/theme.dart';
-import 'home/Devices.dart';
+import 'home/devices.dart';
 import 'home/setting_page.dart';
 import 'home/welcome_page.dart';
 
@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   final List<Widget> _pages = [
     const WelcomePage(),
-    const Devices(),
+    Devices(),
     SettingPage(userProfile: UserProfile()),
   ];
 
@@ -59,18 +59,23 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    // Verwijder de observer om geheugenlekken te voorkomen
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
+  // Deze methode wordt aangeroepen als het systeemthema verandert
   @override
   void didChangePlatformBrightness() {
     _updateThemeFromSystem();
   }
 
+  // Wijzig het thema op basis van het systeem
   void _updateThemeFromSystem() {
     final systemBrightness = WidgetsBinding.instance.window.platformBrightness;
     final newThemeMode = systemBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+
+    // Stel het nieuwe thema in
     _themeProvider.setThemeMode(newThemeMode);
   }
 
@@ -93,14 +98,27 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void _updateHeadText() {
-    List<String> texts = [
-      "Welkom bij de Home pagina!",
-      "zie hier je apparaten",
-      "Welkom bij instellingen",
+    List<List<String>> texts = [
+      [
+        "Welkom bij de Home pagina!",
+        "Hallo en welkom op onze app!",
+        "Fijn dat je hier bent!"
+      ],
+      [
+        "Beheer hier je apparaten!",
+        "Voeg hier je apparaten toe!",
+        "Zet die lapmpen aan!",
+        "Bewerk, voeg toe en verwijder!"
+      ],
+      [
+        'Welkom bij instellingen',
+        'Darkmode?',
+        'Pas aan en ga door!'
+      ]
     ];
 
     setState(() {
-      _headText = texts[currentIndex];
+      _headText = texts[currentIndex][Random().nextInt(texts[currentIndex].length)];
       print('Updated Head Text for Index $currentIndex: $_headText');
     });
   }
@@ -112,11 +130,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         SystemChrome.setSystemUIOverlayStyle(
           SystemUiOverlayStyle(
             statusBarColor: themeProvider.themeMode == ThemeMode.dark
-                ? Colors.black
-                : Colors.white,
+                ? Colors.black // Zwarte statusbalk voor dark mode
+                : Colors.white, // Witte statusbalk voor light mode
             statusBarIconBrightness: themeProvider.themeMode == ThemeMode.dark
-                ? Brightness.light
-                : Brightness.dark,
+                ? Brightness.light // Lichte iconen in dark mode
+                : Brightness.dark, // Donkere iconen in light mode
             systemNavigationBarColor: themeProvider.themeMode == ThemeMode.dark
                 ? Colors.black
                 : Colors.white,
@@ -132,24 +150,25 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             bottomNavigationBar: BottomBarInspiredFancy(
               items: const [
                 TabItem(icon: Icons.home, title: 'Home'),
-                TabItem(icon: Icons.devices, title: 'Apparaten'),
+                TabItem(icon: Icons.devices_sharp, title: 'apparaten'),
                 TabItem(icon: Icons.settings, title: 'Instellingen'),
               ],
               backgroundColor: themeProvider.themeMode == ThemeMode.dark
-                  ? Colors.black
-                  : Colors.white,
+                  ? Colors.black // Achtergrondkleur zwart voor dark mode
+                  : Colors.white, // Achtergrondkleur wit voor light mode
               color: themeProvider.themeMode == ThemeMode.dark
-                  ? Colors.white70
-                  : Colors.black87,
+                  ? Colors.white70 // Icoon kleur lichtgrijs in dark mode
+                  : Colors.black87, // Icoon kleur zwart in light mode
               colorSelected: themeProvider.themeMode == ThemeMode.dark
-                  ? Colors.blueGrey
-                  : Colors.blue,
+                  ? Colors.blueGrey // Geselecteerde kleur blauwgrijs in dark mode
+                  : Colors.blue, // Geselecteerde kleur blauw in light mode
               indexSelected: currentIndex,
               styleIconFooter: StyleIconFooter.dot,
               onTap: (int index) {
                 setState(() {
                   currentIndex = index;
                   _updateHeadText();
+                  print('Geselecteerde pagina index: $currentIndex');
                 });
               },
             ),
@@ -157,37 +176,42 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               children: [
                 SizedBox(height: 30),
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _headText,
-                        style: TextStyle(
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.blueGrey
-                              : Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
+                      if (currentIndex != 2)
+                        Text(
+                          _headText,
+                          style: TextStyle(
+                            color: themeProvider.themeMode == ThemeMode.dark
+                                ? Colors.blueGrey
+                                : Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        _fullName,
-                        style: TextStyle(
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.blueGrey
-                              : Colors.black,
-                          fontSize: 18,
+                      if (currentIndex != 2)
+                        const SizedBox(height: 4),
+                      if (currentIndex != 2)
+                        Text(
+                          _fullName,
+                          style: TextStyle(
+                            color: themeProvider.themeMode == ThemeMode.dark
+                                ? Colors.blueGrey
+                                : Colors.black,
+                            fontSize: 18,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 5),
-                      Divider(
-                        thickness: 0.2,
-                        color: Theme.of(context).dividerColor,
-                        indent: 10,
-                        endIndent: 10,
-                      ),
+                      if (currentIndex != 2)
+                        const SizedBox(height: 5),
+                      if (currentIndex != 2)
+                        Divider(
+                          thickness: 0.2,
+                          color: Theme.of(context).dividerColor,
+                          indent: 10,
+                          endIndent: 10,
+                        ),
                     ],
                   ),
                 ),
