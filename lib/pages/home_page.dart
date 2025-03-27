@@ -3,18 +3,14 @@ import 'package:awesome_bottom_bar/awesome_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:youtube_chat_app/models/user_profile.dart';
-import 'package:youtube_chat_app/pages/home/add_content_page.dart';
-import 'package:youtube_chat_app/pages/home/view_content.dart';
-import 'package:youtube_chat_app/pages/support_page.dart';
-import 'package:youtube_chat_app/services/alert_service.dart';
-import 'package:youtube_chat_app/services/auth_service.dart';
-import 'package:youtube_chat_app/services/database_service.dart';
-import 'package:youtube_chat_app/services/local_storage.dart';
-import 'package:youtube_chat_app/services/navigation_service.dart';
-import 'package:youtube_chat_app/services/theme.dart';
+import '../models/user_profile.dart';
+import '../services/alert_service.dart';
+import '../services/auth_service.dart';
+import '../services/database_service.dart';
+import '../services/navigation_service.dart';
+import '../services/theme.dart';
+import 'home/Devices.dart';
 import 'home/setting_page.dart';
 import 'home/welcome_page.dart';
 
@@ -41,9 +37,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   final List<Widget> _pages = [
     const WelcomePage(),
-    const SupportPage(),
-    const AddContentPage(),
-    const ViewContent(),
+    const Devices(),
     SettingPage(userProfile: UserProfile()),
   ];
 
@@ -65,23 +59,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    // Verwijder de observer om geheugenlekken te voorkomen
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  // Deze methode wordt aangeroepen als het systeemthema verandert
   @override
   void didChangePlatformBrightness() {
     _updateThemeFromSystem();
   }
 
-  // Wijzig het thema op basis van het systeem
   void _updateThemeFromSystem() {
     final systemBrightness = WidgetsBinding.instance.window.platformBrightness;
     final newThemeMode = systemBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
-
-    // Stel het nieuwe thema in
     _themeProvider.setThemeMode(newThemeMode);
   }
 
@@ -104,36 +93,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void _updateHeadText() {
-    List<List<String>> texts = [
-      [
-        "Welkom bij de Welkomstpagina!",
-        "Hallo en welkom op onze app!",
-        "Fijn dat je hier bent!"
-      ],
-      [
-        "Neem contact met ons op!",
-        "We horen graag van je!",
-        "Stuur ons een bericht!"
-      ],
-      [
-        'Voeg je content toe!',
-        'Bepaal je eigen stijl!',
-        'Doe het makkelijk en snel!'
-      ],
-      [
-        'Verbeter je content!',
-        'Zie wat je hebt!',
-        'Beheer je content!'
-      ],
-      [
-        "Dit zijn de instellingen.",
-        "Hier kun je je voorkeuren aanpassen.",
-        "Beheer je accountinstellingen hier."
-      ]
+    List<String> texts = [
+      "Welkom bij de Home pagina!",
+      "zie hier je apparaten",
+      "Welkom bij instellingen",
     ];
 
     setState(() {
-      _headText = texts[currentIndex][Random().nextInt(texts[currentIndex].length)];
+      _headText = texts[currentIndex];
       print('Updated Head Text for Index $currentIndex: $_headText');
     });
   }
@@ -142,15 +109,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
-        // Pas de statusbalkkleur aan op basis van het thema
         SystemChrome.setSystemUIOverlayStyle(
           SystemUiOverlayStyle(
             statusBarColor: themeProvider.themeMode == ThemeMode.dark
-                ? Colors.black // Zwarte statusbalk voor dark mode
-                : Colors.white, // Witte statusbalk voor light mode
+                ? Colors.black
+                : Colors.white,
             statusBarIconBrightness: themeProvider.themeMode == ThemeMode.dark
-                ? Brightness.light // Lichte iconen in dark mode
-                : Brightness.dark, // Donkere iconen in light mode
+                ? Brightness.light
+                : Brightness.dark,
             systemNavigationBarColor: themeProvider.themeMode == ThemeMode.dark
                 ? Colors.black
                 : Colors.white,
@@ -166,20 +132,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             bottomNavigationBar: BottomBarInspiredFancy(
               items: const [
                 TabItem(icon: Icons.home, title: 'Home'),
-                TabItem(icon: Icons.people_rounded, title: 'Support'),
-                TabItem(icon: Icons.add, title: 'Voeg toe'),
-                TabItem(icon: Icons.article, title: 'Content'),
+                TabItem(icon: Icons.devices, title: 'Apparaten'),
                 TabItem(icon: Icons.settings, title: 'Instellingen'),
               ],
               backgroundColor: themeProvider.themeMode == ThemeMode.dark
-                  ? Colors.black // Achtergrondkleur zwart voor dark mode
-                  : Colors.white, // Achtergrondkleur wit voor light mode
+                  ? Colors.black
+                  : Colors.white,
               color: themeProvider.themeMode == ThemeMode.dark
-                  ? Colors.white70 // Icoon kleur lichtgrijs in dark mode
-                  : Colors.black87, // Icoon kleur zwart in light mode
+                  ? Colors.white70
+                  : Colors.black87,
               colorSelected: themeProvider.themeMode == ThemeMode.dark
-                  ? Colors.blueGrey // Geselecteerde kleur blauwgrijs in dark mode
-                  : Colors.blue, // Geselecteerde kleur blauw in light mode
+                  ? Colors.blueGrey
+                  : Colors.blue,
               indexSelected: currentIndex,
               styleIconFooter: StyleIconFooter.dot,
               onTap: (int index) {
@@ -193,11 +157,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               children: [
                 SizedBox(height: 30),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (currentIndex != 4)
                       Text(
                         _headText,
                         style: TextStyle(
@@ -208,21 +171,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           fontSize: 24,
                         ),
                       ),
-                      if (currentIndex != 4)
-                      const SizedBox(height: 4),
-                      if (currentIndex != 4)
-                        Text(
-                          _fullName,
-                          style: TextStyle(
-                            color: themeProvider.themeMode == ThemeMode.dark
-                                ? Colors.blueGrey
-                                : Colors.black,
-                            fontSize: 18,
-                          ),
+                      SizedBox(height: 3),
+                      Text(
+                        _fullName,
+                        style: TextStyle(
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.blueGrey
+                              : Colors.black,
+                          fontSize: 18,
                         ),
-                      if (currentIndex != 4)
-                      const SizedBox(height: 5),
-                      if (currentIndex != 4)
+                      ),
+                      SizedBox(height: 5),
                       Divider(
                         thickness: 0.2,
                         color: Theme.of(context).dividerColor,

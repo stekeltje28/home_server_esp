@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1059148649690:android:8e53c4b198887fe1ab01e3",
+        "android_client_info": {
+          "package_name": "com.example.keuze_project_appdev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz8D3BEuraVbTokNHDsbHATjPX4CWQgAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1059148649690:android:436d0ea729521bfeab01e3",
         "android_client_info": {
           "package_name": "com.learning.firebase"

@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:youtube_chat_app/models/user_profile.dart';
-import 'package:youtube_chat_app/services/alert_service.dart';
-import 'package:youtube_chat_app/services/auth_service.dart';
-import 'package:youtube_chat_app/services/database_service.dart';
-import 'package:youtube_chat_app/services/local_storage.dart';
-import 'package:youtube_chat_app/services/navigation_service.dart';
-import 'package:youtube_chat_app/widgets/pfpdialog.dart';
+import '../../models/user_profile.dart';
+import '../../services/alert_service.dart';
+import '../../services/auth_service.dart';
+import '../../services/database_service.dart';
+import '../../services/local_storage.dart';
+import '../../services/navigation_service.dart';
 import '../../services/theme.dart';
+import '../../widgets/pfpdialog.dart';
 
 class SettingPage extends StatefulWidget {
   final UserProfile userProfile;
@@ -46,9 +46,11 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Future<void> _loadUserProfile() async {
+    print('userdata opgehalen');
     try {
       UserProfile? userProfile = await _databaseService.getUserProfile();
       if (userProfile != null) {
+        print('userdata opgehaald');
         setState(() {
           _fullName = userProfile.name ?? 'Onbekend';
           _pfpURL = userProfile.pfpURL ?? '';
@@ -277,7 +279,9 @@ class _SettingPageState extends State<SettingPage> {
                   glowShape: BoxShape.circle,
                   curve: Curves.fastOutSlowIn,
                     child: CircleAvatar(
-                      backgroundImage: NetworkImage(pfpURL),
+                      backgroundImage: _pfpURL.isNotEmpty
+                          ? NetworkImage(_pfpURL)
+                          : AssetImage('assets/images/default_avatar.png') as ImageProvider,
                       radius: 80.0,
                     ),
                   ),

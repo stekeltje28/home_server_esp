@@ -4,20 +4,19 @@ import 'dart:ui';
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:youtube_chat_app/consts.dart';
-import 'package:youtube_chat_app/services/alert_service.dart';
-import 'package:youtube_chat_app/services/auth_service.dart';
-import 'package:youtube_chat_app/services/media_service.dart';
-import 'package:youtube_chat_app/services/navigation_service.dart';
-import 'package:youtube_chat_app/services/storage_service.dart';
-import 'package:youtube_chat_app/widgets/costum_form_field.dart';
 
+import '../consts.dart';
+import '../models/user_profile.dart';
+import '../services/alert_service.dart';
+import '../services/auth_service.dart';
 import '../services/database_service.dart';
+import '../services/media_service.dart';
+import '../services/navigation_service.dart';
+import '../services/storage_service.dart';
+import '../widgets/costum_form_field.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
-
-
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -25,7 +24,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final GetIt _getIt = GetIt.instance;
-  final GlobalKey<FormState> _registerFormKey = GlobalKey();
+  final GlobalKey<FormState> _registerFormKey = GlobalKey<FormState>();
 
   late AuthService _authService;
   late MediaService _mediaService;
@@ -37,8 +36,6 @@ class _RegisterPageState extends State<RegisterPage> {
   String? email, password, name;
   File? selectedImage;
   bool isLoading = false;
-
-
 
   @override
   void initState() {
@@ -142,7 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: min(MediaQuery.of(context).size.width * 0.03 + MediaQuery.of(context).size.height * 0.02, 40), // Limiting max size to 20
+              fontSize: min(MediaQuery.of(context).size.width * 0.03 + MediaQuery.of(context).size.height * 0.02, 40),
             ),
           ),
           const SizedBox(height: 8),
@@ -150,7 +147,7 @@ class _RegisterPageState extends State<RegisterPage> {
             "registreer je account",
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Colors.grey,
-              fontSize: min(MediaQuery.of(context).size.width * 0.02 + MediaQuery.of(context).size.height * 0.01, 22), // Limiting max size to 20
+              fontSize: min(MediaQuery.of(context).size.width * 0.02 + MediaQuery.of(context).size.height * 0.01, 22),
             ),
           ),
           const SizedBox(height: 8),
@@ -172,28 +169,31 @@ class _RegisterPageState extends State<RegisterPage> {
           CustomFormField(
             hintText: 'Volledige naam',
             height: MediaQuery.of(context).size.height * 0.1,
-            validationRegEx: NAME_VALIDATION_REGEX,
-            onSaved: (value) {
-              name = value;
+            onsave: (value) {
+              setState(() {
+                name = value;
+              });
             },
           ),
           const SizedBox(height: 16),
           CustomFormField(
             hintText: 'Email',
             height: MediaQuery.of(context).size.height * 0.1,
-            validationRegEx: EMAIL_VALIDATION_REGEX,
-            onSaved: (value) {
-              email = value;
+            onsave: (value) {
+              setState(() {
+                email = value;
+              });
             },
           ),
           const SizedBox(height: 16),
           CustomFormField(
             hintText: 'Wachtwoord',
             height: MediaQuery.of(context).size.height * 0.1,
-            validationRegEx: PASSWORD_VALIDATION_REGEX,
             obscureText: true,
-            onSaved: (value) {
-              password = value;
+            onsave: (value) {
+              setState(() {
+                password = value;
+              });
             },
           ),
           const SizedBox(height: 20),
@@ -223,7 +223,7 @@ class _RegisterPageState extends State<RegisterPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
-                radius: min(MediaQuery.of(context).size.width * 0.04 + MediaQuery.of(context).size.height * 0.03, 55), // Limiting max size to 20
+                radius: min(MediaQuery.of(context).size.width * 0.04 + MediaQuery.of(context).size.height * 0.03, 55),
                 backgroundImage: selectedImage != null
                     ? FileImage(selectedImage!)
                     : const NetworkImage(PLACEHOLDER_PFP),
@@ -257,76 +257,76 @@ class _RegisterPageState extends State<RegisterPage> {
           setState(() {
             isLoading = true;
           });
-          // try {
-            // if ((_registerFormKey.currentState?.validate() ?? false) && selectedImage != null) {
-            //   _registerFormKey.currentState?.save();
-            //   bool result = await _authService.signup(email!, password!);
-            //   if (result) {
-            //     String? pfpURL = await _storageService.upLoadUserPip(
-            //         file: selectedImage!,
-            //         uid: _authService.user!.uid
-            //     );
-            //     if (pfpURL != null) {
-            //       await _databaseService.createUserProfile(userProfile: UserProfile(
-            //           uid: _authService.user!.uid,
-            //           name: name!,
-            //           pfpURL: pfpURL,
-            //           email: email!,
-            //           access: false),
-            //       );
-            //       _alertService.showToast(text: 'Je hebt succesvol een account aangemaakt 💪', icon: Icons.check);
-            //     }
-            //     bool login = await _authService.login(email!, password!);
-            //     if (login) {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: const Text("Welkom!"),
-                content: const Text(
-                    "Hoe kunnen we u van dienst zijn? \n uw account is gemaakt, Vul uw websitewensen in of krijg een rondleiding in onze app."
-                ),
-                actions: [
-                  TextButton(
-                    child: const Text("Wensen invullen"),
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('/complete');
-                    },
-                  ),
-                  TextButton(
-                    child: const Text("Rondkijken"),
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('/home');
-                    },
-                  ),
-                  TextButton(
-                    child: const Text("Annuleren"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
+          print("Button pressed, starting registration process");
+          print('email: $email wachtwoord: $password');
+          try {
+            // Validate form fields
+            if ((_registerFormKey.currentState?.validate() ?? false) && selectedImage != null) {
+              _registerFormKey.currentState?.save();
+
+              if (email == null || password == null) {
+                _alertService.showToast(
+                  text: 'Vul een geldige email en wachtwoord in',
+                  icon: Icons.error_outline,
+                );
+                return;
+              }
+
+              bool result = await _authService.signup(email!, password!);
+
+              if (result) {
+                if (selectedImage != null) {
+                  String? pfpURL = await _storageService.upLoadUserPip(
+                    file: selectedImage!,
+                    uid: _authService.user!.uid,
+                  );
+
+                  if (pfpURL != null) {
+                    await _databaseService.createUserProfile(
+                      userProfile: UserProfile(
+                        uid: _authService.user?.uid ?? "NULL",
+                        name: name,
+                        pfpURL: pfpURL,
+                        email: email,
+                        access: false,
+                      ),
+                    );
+                    _alertService.showToast(
+                      text: 'Je hebt succesvol een account aangemaakt 💪',
+                      icon: Icons.check,
+                    );
+                  }
+                }
+
+                bool login = await _authService.login(email!, password!);
+                if (login) {
+                  _navigationService.pushNamed('/home');
+                } else {
+                  _alertService.showToast(
+                    text: 'Er is iets mis gegaan, probeer hier in te loggen',
+                    icon: Icons.error_outline,
+                  );
+                  _navigationService.pushNamed('/login');
+                }
+              }
+            } else {
+              print('email: $email wachtwoord: $password');
+              _alertService.showToast(
+                text: 'Vul alle tekstvelden correct in',
+                icon: Icons.error_outline,
               );
-            },
-          );
-
-          // } else {
-                //   _alertService.showToast(text: 'Er is iets mis gegaan, probeer hier in te loggen', icon: Icons.error_outline);
-                //   _navigationService.pushNamed('/login');
-                // }
-
-            // } else if (selectedImage == null) {
-            //   _alertService.showToast(text: 'Heb je al een afbeelding gekozen?', icon: Icons.error_outline);
-            // } else {
-            //   _alertService.showToast(text: 'Vul alle tekstvelden correct in', icon: Icons.error_outline);
-            // }
-          // } catch (e) {
-          //   print('Niet gelukt');
-          //   _alertService.showToast(text: 'registratie is gefaald!', icon: Icons.error_outline);
-          // }
-          // setState(() {
-          //   isLoading = false;
-          // });
+            }
+          } catch (e, stacktrace) {
+            print('Registratie mislukt met fout: $e');
+            print('Stacktrace: $stacktrace');
+            _alertService.showToast(
+              text: 'Registratie is gefaald!',
+              icon: Icons.error_outline,
+            );
+          }
+          setState(() {
+            isLoading = false;
+          });
         },
         child: isLoading
             ? const CircularProgressIndicator()
@@ -341,8 +341,6 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _loginAnAccountLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
-      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         const Text(
           'Heb je al een account? ',

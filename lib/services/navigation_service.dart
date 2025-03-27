@@ -1,12 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:youtube_chat_app/pages/complete_page.dart';
-import 'package:youtube_chat_app/pages/content_toevoegen/confirm_page.dart';
 import 'package:youtube_chat_app/pages/home_page.dart';
 import 'package:youtube_chat_app/pages/login_page.dart';
 import 'package:youtube_chat_app/pages/register_page.dart';
-import 'package:youtube_chat_app/pages/support_page.dart';
 
 class NavigationService {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
@@ -16,9 +13,6 @@ class NavigationService {
     "/login": (context) => const LoginPage(),
     "/register": (context) => const RegisterPage(),
     "/home": (context) =>  const HomePage(),
-    "/contact": (context) => const SupportPage(),
-   // "/complete": (context) => const CompletePage(),
-    "/confirm_page": (context) => const ConfirmPage(),
 
 
 

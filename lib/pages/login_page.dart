@@ -2,15 +2,14 @@ import 'dart:async'; // Import for Future
 import 'dart:io'; // Import for InternetAddress
 import 'dart:math';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:blurrycontainer/blurrycontainer.dart';
-import 'package:youtube_chat_app/consts.dart';
-import 'package:youtube_chat_app/services/alert_service.dart';
-import 'package:youtube_chat_app/services/auth_service.dart';
-import 'package:youtube_chat_app/services/navigation_service.dart';
 
+import '../consts.dart';
+import '../services/alert_service.dart';
+import '../services/auth_service.dart';
+import '../services/navigation_service.dart';
 import '../widgets/costum_form_field.dart';
 
 class LoginPage extends StatefulWidget {
@@ -171,16 +170,16 @@ class _LoginPageState extends State<LoginPage> {
               height: MediaQuery.of(context).size.height * 0.1,
               hintText: 'E-mail',
               validationRegEx: EMAIL_VALIDATION_REGEX,
-              onSaved: (value) {
+              onsave: (value) {
                 email = value;
               },
             ),
             CustomFormField(
               height: MediaQuery.of(context).size.height * 0.1,
               hintText: 'Wachtwoord',
-              validationRegEx: PASSWORD_VALIDATION_REGEX,
+              // validationRegEx: PASSWORD_VALIDATION_REGEX,
               obscureText: true,
-              onSaved: (value) {
+              onsave: (value) {
                 password = value;
               },
             ),
@@ -197,45 +196,45 @@ class _LoginPageState extends State<LoginPage> {
       child: ElevatedButton(
         onPressed: () async {
 
-          await _authService.login('thijs.stekeltje@gmail.com', 'Stekeltje 2007');
-          _navigationService.pushReplacementNamed('/home');
+          // await _authService.login('thijs.stekeltje@gmail.com', 'Stekeltje 2007');
+          // _navigationService.pushReplacementNamed('/home');
+          //
 
+          if (_loginFormkey.currentState?.validate() ?? false) {
+            _loginFormkey.currentState?.save();
+            print('email: $email \n password: $password');
 
-        //   if (_loginFormkey.currentState?.validate() ?? false) {
-        //     _loginFormkey.currentState?.save();
-        //     print('email: $email \n password: $password');
-        //
-        //     if (email != null && password != null) {
-        //       // Check internet connection
-        //       bool connection = await hasInternetConnection();
-        //       if (!connection) {
-        //         _alertService.showToast(
-        //           text: 'Geen internetverbinding. Probeer het later opnieuw.',
-        //           icon: Icons.error_outline,
-        //         );
-        //         return; // Exit the function if no internet
-        //       }
-        //
-        //       // Attempt to log in
-        //       bool result = await _authService.login(email!, password!);
-        //       if (result) {
-        //         // Navigate to the home page on the main thread
-        //         WidgetsBinding.instance.addPostFrameCallback((_) {
-        //           _navigationService.pushReplacementNamed('/home');
-        //         });
-        //       } else {
-        //         _alertService.showToast(
-        //           text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
-        //           icon: Icons.error_outline,
-        //         );
-        //       }
-        //     }
-        //   } else {
-        //     _alertService.showToast(
-        //       text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
-        //       icon: Icons.error_outline,
-        //     );
-        //   }
+            if (email != null && password != null) {
+              // Check internet connection
+              bool connection = await hasInternetConnection();
+              if (!connection) {
+                _alertService.showToast(
+                  text: 'Geen internetverbinding. Probeer het later opnieuw.',
+                  icon: Icons.error_outline,
+                );
+                return; // Exit the function if no internet
+              }
+
+              // Attempt to log in
+              bool result = await _authService.login(email!, password!);
+              if (result) {
+                // Navigate to the home page on the main thread
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _navigationService.pushReplacementNamed('/home');
+                });
+              } else {
+                _alertService.showToast(
+                  text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
+                  icon: Icons.error_outline,
+                );
+              }
+            }
+          } else {
+            _alertService.showToast(
+              text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
+              icon: Icons.error_outline,
+            );
+          }
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),
