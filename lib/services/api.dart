@@ -1,40 +1,62 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class api {
+class ApiService {
+  final String baseUrl = "http://192.168.x.x:5555"; // Vervang met je server IP
 
-  //voeg toe
-  Future<void> addContent(String title, String content, String file, String url ) async {
-    final response = await http.post(
-      Uri.parse('http://localhost:8000/api/$url/'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'title': title,
-        'content': content,
-        'file': file,
-      }),
-      );
-    }
+  // 🟢 Haal temperatuur op
+  Future<Map<String, dynamic>?> fetchTemperature() async {
+    final url = Uri.parse("$baseUrl/data");
 
-  //verwijder
-
-  Future<void> deleteContent(int id, String url) async {
-    final response = await http.delete(
-      Uri.parse('http://localhost:8000/api/$url/$id/'),
-    );
-  }
-
-  //inzien
-
-    Future<List<dynamic>> viewContent(url) async {
-      final response = await http.get(Uri.parse('http://localhost:8000/api/$url/'));
-
+    try {
+      final response = await http.get(url);
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to load text contents');
+        print("Fout bij ophalen: ${response.statusCode}");
+        return null;
       }
+    } catch (e) {
+      print("Netwerkfout: $e");
+      return null;
     }
   }
+
+  // 💡 Zet een lamp aan/uit
+  Future<bool> controlLamp(String lampId, String status) async {
+    final url = Uri.parse("$baseUrl/lamp");
+    final body = jsonEncode({"lampid": lampId, "status": status});
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Netwerkfout: $e");
+      return false;
+    }
+  }
+
+  // 🌬 Zet ventilatie aan/uit
+  Future<bool> controlVentilation(String status) async {
+    final url = Uri.parse("$baseUrl/ventilatie");
+    final body = jsonEncode({"status": status});
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Netwerkfout: $e");
+      return false;
+    }
+  }
+}
