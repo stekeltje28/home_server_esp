@@ -93,6 +93,7 @@ class AuthService extends ChangeNotifier {
 
   // Afmelden van de gebruiker
   Future<bool> logout() async {
+    final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
     try {
       await _firebaseAuth.signOut();
       _user = null; // Reset de gebruiker
@@ -122,5 +123,131 @@ class AuthService extends ChangeNotifier {
       print('Error getting token: $e');
     }
     return null;
+  }
+
+  // Verwijder de gebruiker en zijn profiel
+  Future<bool> deleteUser(String password) async {
+    try {
+      print('DEBUG: Start functie deleteUser');
+      User? currentUser = _firebaseAuth.currentUser;
+      print('DEBUG: Huidige gebruiker ophalen...');
+
+      if (currentUser == null) {
+        print('FOUT: Geen gebruiker ingelogd');
+        return false;
+      }
+
+      print('DEBUG: Gebruiker ingelogd als ${currentUser.uid}, email: ${currentUser.email}');
+
+      // Controleer of de gebruiker een e-mailadres heeft
+      if (currentUser.email == null) {
+        print('FOUT: Gebruiker heeft geen e-mailadres');
+        return false;
+      }
+
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: currentUser.email!,
+        password: password,
+      );
+      try {
+        print('DEBUG: Probeer her-authenticatie uit te voeren...');
+        await currentUser.delete();
+        print('DEBUG: Her-authenticatie succesvol');
+      } catch (e) {
+        print('FOUT bij her-authenticatie (mogelijk timeout): $e');
+        return false;
+      }
+
+
+      try {
+        print('DEBUG: Verwijderen Firestore-document voor gebruiker ${currentUser.uid}');
+        await _firestore.collection('users').doc(currentUser.uid).delete();
+        print('DEBUG: Gebruikersdocument succesvol verwijderd uit Firestore');
+      } catch (e) {
+        print('FOUT bij verwijderen Firestore-document: $e');
+        return false;
+      }
+
+      // Reset gebruikersgegevens
+      print('DEBUG: Reset gebruikersgegevens');
+      _user = null;
+      _userProfile = null;
+      notifyListeners();
+
+      print('DEBUG: Gebruiker volledig verwijderd');
+      return true;
+    } catch (e) {
+      print('ONVERWACHTE FOUT bij verwijderen gebruiker: $e');
+      return false;
+    }
+  }
+
+  // Methode voor her-authenticatie van de gebruiker
+  Future<bool> reauthenticate(String password) async {
+    try {
+      User? currentUser = _firebaseAuth.currentUser;
+
+      if (currentUser == null || currentUser.email == null) {
+        print('Geen gebruiker ingelogd of geen e-mailadres');
+        return false;
+      }
+
+      // Maak referentie-referenties aan
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: currentUser.email!,
+        password: password,
+      );
+
+      // Her-authenticeer de gebruiker
+      await currentUser.reauthenticateWithCredential(credential);
+
+      print('Her-authenticatie succesvol');
+      return true;
+    } on FirebaseAuthException catch (e) {
+      // Gedetailleerde foutafhandeling
+      if (e.code == 'wrong-password') {
+        print('Onjuist wachtwoord');
+      } else {
+        print('Her-authenticatie mislukt: ${e.message}');
+      }
+      return false;
+    } catch (e) {
+      print('Onverwachte fout bij her-authenticatie: $e');
+      return false;
+    }
+  }
+
+// Methode voor wachtwoord wijzigen
+  Future<bool> changePassword(String newPassword) async {
+    try {
+      User? currentUser = _firebaseAuth.currentUser;
+
+      if (currentUser == null) {
+        print('Geen gebruiker ingelogd');
+        return false;
+      }
+
+      // Wijzig het wachtwoord
+      await currentUser.updatePassword(newPassword);
+
+      print('Wachtwoord succesvol gewijzigd');
+      return true;
+    } on FirebaseAuthException catch (e) {
+      // Gedetailleerde foutafhandeling
+      switch (e.code) {
+        case 'weak-password':
+          print('Zwak wachtwoord. Kies een sterker wachtwoord.');
+          break;
+        case 'requires-recent-login':
+          print('Recente authenticatie vereist. Meld opnieuw aan.');
+          break;
+        default:
+          print('Fout bij wachtwoord wijzigen: ${e.message}');
+      }
+      return false;
+    } catch (e) {
+      print('Onverwachte fout bij wachtwoord wijzigen: $e');
+      return false;
+    }
   }
 }

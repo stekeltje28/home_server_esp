@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = "http://devionyx.com:5555"; // Vervang met je server IP
+  final String baseUrl = "http://192.168.4.1:80"; // Vervang met je server IP/
 
   // 🟢 Haal temperatuur op
   Future<Map<String, dynamic>?> fetchTemperature() async {
@@ -11,6 +11,7 @@ class ApiService {
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
+        print(jsonDecode(response.body));
         return jsonDecode(response.body);
       } else {
         print("Fout bij ophalen: ${response.statusCode}");
@@ -21,6 +22,24 @@ class ApiService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> fetchDeviceStatuses() async {
+    final url = Uri.parse("$baseUrl/data");
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print("Fout bij ophalen statussen: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Netwerkfout: $e");
+      return null;
+    }
+  }
+
 
   // 💡 Zet een lamp aan/uit
   Future<bool> controlLamp(String lampId, String status) async {

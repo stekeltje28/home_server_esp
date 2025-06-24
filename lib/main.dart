@@ -14,15 +14,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Firebase with error handling
-  try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    print('Firebase initialized successfully');
-  } catch (e) {
-    print('Failed to initialize Firebase: $e');
-    // Consider showing a dialog or an error page if Firebase is essential
-  }
+  // try {
+  //   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //   print('Firebase initialized successfully');
+  // } catch (e) {
+  //   print('Failed to initialize Firebase: $e');
+  //   // Consider showing a dialog or an error page if Firebase is essential
+  // }
 
-  await FirebaseMessage().initNotifications();
+  // await FirebaseMessage().initNotifications();
   await LocalStorage.init();
 
   await setup();  // Calls registerServices
@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigationService.navigatorKey,
       title: 'easy',
       routes: navigationService.routes,
-      initialRoute: authService.user != null ? "/home" : "/login",
+      initialRoute: "/home" ,
       builder: (context, child) {
         return child!;
       },

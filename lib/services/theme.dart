@@ -32,12 +32,6 @@ final lightTheme = ThemeData(
     hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
     labelStyle: TextStyle(color: Colors.blue, fontSize: 16),
   ),
-  cardTheme: CardTheme(
-    color: Colors.white,
-    elevation: 2,
-    margin: EdgeInsets.all(10),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-  ),
   iconTheme: IconThemeData(color: Colors.blue),
   floatingActionButtonTheme: FloatingActionButtonThemeData(
     backgroundColor: Colors.blue,
@@ -69,12 +63,6 @@ final darkTheme = ThemeData(
     fillColor: Colors.white12,
     hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
     labelStyle: TextStyle(color: Colors.blueGrey, fontSize: 16),
-  ),
-  cardTheme: CardTheme(
-    color: Colors.grey[800],
-    elevation: 2,
-    margin: EdgeInsets.all(10),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
   ),
   iconTheme: IconThemeData(color: Colors.white),
   floatingActionButtonTheme: FloatingActionButtonThemeData(

@@ -176,7 +176,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               children: [
                 SizedBox(height: 30),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

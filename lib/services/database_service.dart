@@ -68,48 +68,6 @@ class DatabaseService {
         .snapshots();
   }
 
-  Future<bool> checkChatExist(String uid1, String uid2) async {
-    final chatID = generateChatID(uid1: uid1, uid2: uid2);
-    try {
-      final result = await _chatsCollection?.doc(chatID).get();
-      return result?.exists ?? false;
-    } catch (e) {
-      print('Failed to check chat existence: $e');
-      throw Exception('Failed to check chat existence: $e');
-    }
-  }
-
-  Future<void> createNewChat(String uid1, String uid2) async {
-    final chatID = generateChatID(uid1: uid1, uid2: uid2);
-    final chat = Chat(
-      id: chatID,
-      participants: [uid1, uid2],
-      messages: [],
-    );
-    try {
-      await _chatsCollection?.doc(chatID).set(chat);
-    } catch (e) {
-      print('Failed to create new chat: $e');
-      throw Exception('Failed to create new chat: $e');
-    }
-  }
-
-  Future<void> sendChatMessage(String uid1, String uid2, Message message) async {
-    final chatID = generateChatID(uid1: uid1, uid2: uid2);
-    try {
-      await _chatsCollection?.doc(chatID).update({
-        "messages": FieldValue.arrayUnion([message.toJson()]),
-      });
-    } catch (e) {
-      print('Failed to send chat message: $e');
-      throw Exception('Failed to send chat message: $e');
-    }
-  }
-
-  Stream<DocumentSnapshot<Chat>> getChatData(String uid1, String uid2) {
-    final chatID = generateChatID(uid1: uid1, uid2: uid2);
-    return _chatsCollection!.doc(chatID).snapshots();
-  }
 
   Future<UserProfile?> getUserProfile() async {
     final uid = _authService.user?.uid;

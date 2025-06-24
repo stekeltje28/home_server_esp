@@ -177,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
             CustomFormField(
               height: MediaQuery.of(context).size.height * 0.1,
               hintText: 'Wachtwoord',
-              // validationRegEx: PASSWORD_VALIDATION_REGEX,
+              validationRegEx: PASSWORD_VALIDATION_REGEX,
               obscureText: true,
               onsave: (value) {
                 password = value;
@@ -196,45 +196,44 @@ class _LoginPageState extends State<LoginPage> {
       child: ElevatedButton(
         onPressed: () async {
 
-          // await _authService.login('thijs.stekeltje@gmail.com', 'Stekeltje 2007');
-          // _navigationService.pushReplacementNamed('/home');
+          await _authService.login('thijs.stekeltje@gmail.com', 'T@stekeltje2007');
+          _navigationService.pushReplacementNamed('/home');
+
+          // if (_loginFormkey.currentState?.validate() ?? false) {
+          //   _loginFormkey.currentState?.save();
+          //   print('email: $email \n password: $password');
           //
-
-          if (_loginFormkey.currentState?.validate() ?? false) {
-            _loginFormkey.currentState?.save();
-            print('email: $email \n password: $password');
-
-            if (email != null && password != null) {
-              // Check internet connection
-              bool connection = await hasInternetConnection();
-              if (!connection) {
-                _alertService.showToast(
-                  text: 'Geen internetverbinding. Probeer het later opnieuw.',
-                  icon: Icons.error_outline,
-                );
-                return; // Exit the function if no internet
-              }
-
-              // Attempt to log in
-              bool result = await _authService.login(email!, password!);
-              if (result) {
-                // Navigate to the home page on the main thread
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _navigationService.pushReplacementNamed('/home');
-                });
-              } else {
-                _alertService.showToast(
-                  text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
-                  icon: Icons.error_outline,
-                );
-              }
-            }
-          } else {
-            _alertService.showToast(
-              text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
-              icon: Icons.error_outline,
-            );
-          }
+          //   if (email != null && password != null) {
+          //     // Check internet connection
+          //     bool connection = await hasInternetConnection();
+          //     if (!connection) {
+          //       _alertService.showToast(
+          //         text: 'Geen internetverbinding. Probeer het later opnieuw.',
+          //         icon: Icons.error_outline,
+          //       );
+          //       return; // Exit the function if no internet
+          //     }
+          //
+          //     // Attempt to log in
+          //     bool result = await _authService.login(email!, password!);
+          //     if (result) {
+          //       // Navigate to the home page on the main thread
+          //       WidgetsBinding.instance.addPostFrameCallback((_) {
+          //         _navigationService.pushReplacementNamed('/home');
+          //       });
+          //     } else {
+          //       _alertService.showToast(
+          //         text: 'Gebruikersnaam en/of wachtwoord zijn onjuist',
+          //         icon: Icons.error_outline,
+          //       );
+          //     }
+          //   }
+          // } else {
+          //   _alertService.showToast(
+          //     text: 'Gebruikersnaam en/of wachtwoord voldoen niet aan de eisen',
+          //     icon: Icons.error_outline,
+          //   );
+          // }
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),

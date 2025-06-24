@@ -9,6 +9,7 @@ import '../../models/user_profile.dart';
 import '../../services/alert_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/database_service.dart';
+import '../../services/delete_account.dart';
 import '../../services/local_storage.dart';
 import '../../services/navigation_service.dart';
 import '../../services/theme.dart';
@@ -33,6 +34,7 @@ class _SettingPageState extends State<SettingPage> {
 
   var _fullName = '';
   var _pfpURL = '';
+  bool _notificationsEnabled = true;
 
   @override
   void initState() {
@@ -42,24 +44,25 @@ class _SettingPageState extends State<SettingPage> {
     _alertService = GetIt.instance.get<AlertService>();
     _databaseService = GetIt.instance.get<DatabaseService>();
     _userProfile = widget.userProfile;
-    _loadUserProfile();
+    _loadUserSettings();
   }
 
-  Future<void> _loadUserProfile() async {
-    print('userdata opgehalen');
+  Future<void> _loadUserSettings() async {
     try {
       UserProfile? userProfile = await _databaseService.getUserProfile();
       if (userProfile != null) {
-        print('userdata opgehaald');
         setState(() {
           _fullName = userProfile.name ?? 'Onbekend';
           _pfpURL = userProfile.pfpURL ?? '';
+
+          // Veilige manier van ophalen van instellingen met fallback
+          _notificationsEnabled = LocalStorage.get('notifications_enabled') ?? true;
         });
       }
     } catch (e) {
-      print('Error loading user profile: $e');
+      print('Error loading user settings: $e');
       _alertService.showToast(
-        text: 'Fout bij het ophalen van het profiel.',
+        text: 'Fout bij het ophalen van instellingen.',
         icon: Icons.error_outline,
       );
     }
@@ -75,7 +78,7 @@ class _SettingPageState extends State<SettingPage> {
         final storageRef = FirebaseStorage.instance
             .ref()
             .child('profile_pictures')
-            .child(DateTime.now().toIso8601String());
+            .child('${DateTime.now().toIso8601String()}_${_userProfile.uid}');
 
         final uploadTask = storageRef.putFile(imageFile);
         final snapshot = await uploadTask.whenComplete(() => {});
@@ -84,18 +87,69 @@ class _SettingPageState extends State<SettingPage> {
         await _databaseService.updateUserProfilePicture(downloadUrl);
 
         setState(() {
-          _userProfile = _userProfile.copyWith(pfpURL: downloadUrl);
           _pfpURL = downloadUrl;
         });
 
-        _alertService.showToast(text: 'Profile picture updated!', icon: Icons.check);
+        _alertService.showToast(
+            text: 'Profielfoto bijgewerkt!',
+            icon: Icons.check
+        );
       } catch (e) {
-        _alertService.showToast(text: 'Error updating profile picture.', icon: Icons.error_outline);
+        _alertService.showToast(
+            text: 'Fout bij bijwerken profielfoto.',
+            icon: Icons.error_outline
+        );
       }
     } else {
-      _alertService.showToast(text: 'No image selected.', icon: Icons.info_outline);
+      _alertService.showToast(
+          text: 'Geen afbeelding geselecteerd.',
+          icon: Icons.info_outline
+      );
     }
   }
+
+  void _toggleNotifications(bool value) {
+    setState(() {
+      _notificationsEnabled = value;
+      LocalStorage.save('notifications_enabled', value);
+      _alertService.showToast(
+        text: value ? 'Meldingen ingeschakeld' : 'Meldingen uitgeschakeld',
+        icon: value ? Icons.notifications_active : Icons.notifications_off,
+      );
+    });
+  }
+
+  void _showAccountDeletionConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Account verwijderen'),
+          content: const Text('Weet je zeker dat je je account wilt verwijderen? Dit kan niet ongedaan worden gemaakt.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Annuleren'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                DeleteAccountDialog.show(
+                  context,
+                  authService: _authService,
+                  navigationService: _navigationService,
+                  alertService: _alertService,
+                );
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Verwijderen'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
 
   void _showThemeModeSheet() {
     showModalBottomSheet(
@@ -105,7 +159,6 @@ class _SettingPageState extends State<SettingPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              contentPadding: EdgeInsets.all(10),
               leading: const Icon(Icons.light_mode),
               title: const Text('Licht'),
               onTap: () async {
@@ -114,7 +167,6 @@ class _SettingPageState extends State<SettingPage> {
               },
             ),
             ListTile(
-              contentPadding: EdgeInsets.all(10),
               leading: const Icon(Icons.dark_mode),
               title: const Text('Donker'),
               onTap: () async {
@@ -123,7 +175,6 @@ class _SettingPageState extends State<SettingPage> {
               },
             ),
             ListTile(
-              contentPadding: EdgeInsets.all(10),
               leading: const Icon(Icons.phone_android),
               title: const Text('Systeem'),
               onTap: () async {
@@ -140,7 +191,20 @@ class _SettingPageState extends State<SettingPage> {
   Future<void> _updateThemeMode(ThemeMode themeMode) async {
     await LocalStorage.save('theme_mode', themeMode.toString().split('.').last);
     Provider.of<ThemeProvider>(context, listen: false).loadThemeMode();
-    _getThemeModeText();
+  }
+
+  String _getThemeModeText() {
+    String? theme = LocalStorage.get("theme_mode");
+    switch (theme) {
+      case 'light':
+        return 'Licht';
+      case 'dark':
+        return 'Donker';
+      case 'system':
+        return 'Systeem';
+      default:
+        return 'Systeem';
+    }
   }
 
   @override
@@ -155,86 +219,60 @@ class _SettingPageState extends State<SettingPage> {
               Padding(
                 padding: EdgeInsets.all(themeProvider.themeMode == ThemeMode.dark ? 18 : 8),
                 child: Container(
-                  width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    color: const Color(0x1A000000),
+                    color: themeProvider.themeMode == ThemeMode.dark
+                        ? Colors.grey[800]
+                        : const Color(0x1A000000),
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: const Color(0x1A000000),
-                        border: Border.all(
-                          color: Colors.white, // Kies de kleur van de rand
-                          width: 2, // Stel de dikte van de rand in
-                        ),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.dark_mode),
+                        title: const Text('Thema'),
+                        subtitle: Text(_getThemeModeText()),
+                        onTap: _showThemeModeSheet,
                       ),
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.dark_mode),
-                            title: const Text('Dark Mode'),
-                            subtitle: Text(_getThemeModeText()),
-                            onTap: _showThemeModeSheet,
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.notifications),
-                            title: const Text('Meldingen'),
-                            subtitle: const Text('Meldingsinstellingen aanpassen'),
-                            onTap: () {},
-                          ),
-                        ],
+                      SwitchListTile(
+                        title: const Text('Meldingen'),
+                        subtitle: const Text('Systeemmeldingen'),
+                        value: _notificationsEnabled,
+                        onChanged: _toggleNotifications,
+                        secondary: const Icon(Icons.notifications),
                       ),
-                    ),
+                      ListTile(
+                        leading: const Icon(Icons.delete_forever),
+                        title: const Text('Account verwijderen'),
+                        subtitle: const Text('Permanent account verwijderen'),
+                        onTap: _showAccountDeletionConfirmation,
+                        textColor: Colors.red,
+                        iconColor: Colors.red,
+                      ),
+                    ],
                   ),
                 ),
               ),
+
               Padding(
                 padding: EdgeInsets.all(themeProvider.themeMode == ThemeMode.dark ? 18 : 8),
-                child: InkWell(
-                    onTap: () async {
-                      bool result = await _authService.logout();
-                      if (result) {
-                        _navigationService.pushReplacementNamed('/login');
-                      }
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: const Color(0x1A000000),
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 2, // Stel de dikte van de rand in
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Uitloggen',
-                            style: TextStyle(
-                              color: themeProvider.themeMode == ThemeMode.dark
-                                  ? Colors.blueGrey
-                                  : Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Icon(
-                            Icons.logout,
-                            color: themeProvider.themeMode == ThemeMode.dark
-                                ? Colors.blueGrey
-                                : Colors.black,
-                          ),
-                        ],
-                      ),
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    bool result = await _authService.logout();
+                    if (result) {
+                      _navigationService.pushReplacementNamed('/login');
+                    }
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Uitloggen'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[400],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
                   ),
+                ),
               ),
             ],
           ),
@@ -243,12 +281,7 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  String _getThemeModeText() {
-    var theme = LocalStorage.get("theme_mode");
-    return theme;
-  }
-
-  Widget _profileSection(BuildContext context, ThemeProvider themeProvider, fullName, pfpURL) {
+  Widget _profileSection(BuildContext context, ThemeProvider themeProvider, String fullName, String pfpURL) {
     return Container(
       padding: const EdgeInsets.all(30.0),
       child: Column(
@@ -278,14 +311,14 @@ class _SettingPageState extends State<SettingPage> {
                   glowColor: Colors.blueGrey,
                   glowShape: BoxShape.circle,
                   curve: Curves.fastOutSlowIn,
-                    child: CircleAvatar(
-                      backgroundImage: _pfpURL.isNotEmpty
-                          ? NetworkImage(_pfpURL)
-                          : AssetImage('assets/images/default_avatar.png') as ImageProvider,
-                      radius: 80.0,
-                    ),
+                  child: CircleAvatar(
+                    backgroundImage: pfpURL.isNotEmpty
+                        ? NetworkImage(pfpURL)
+                        : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
+                    radius: 80.0,
                   ),
                 ),
+              ),
               Positioned(
                 bottom: 5,
                 right: 5,
@@ -293,7 +326,9 @@ class _SettingPageState extends State<SettingPage> {
                   onTap: _editProfilePicture,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: themeProvider.themeMode == ThemeMode.dark ? Colors.blueGrey : Colors.blue[200],
+                      color: themeProvider.themeMode == ThemeMode.dark
+                          ? Colors.blueGrey
+                          : Colors.blue[200],
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -318,7 +353,7 @@ class _SettingPageState extends State<SettingPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            '$fullName',
+            fullName,
             style: TextStyle(
               color: themeProvider.themeMode == ThemeMode.dark
                   ? Colors.blueGrey
